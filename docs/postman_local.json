@@ -1,0 +1,63 @@
+{
+  "info": {
+    "_postman_id": "35273bb0-3142-4309-8a6f-786549a2a242",
+    "name": "Olympus AI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "4317926"
+  },
+  "item": [
+    {
+      "name": "completions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer sk_WImRPcrqktkT91Mm43XfgXBt0N4Jltc4Ci-fJrUOvc4",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"model\": \"saori\",\n    //\"stream\": true,\n    \"messages\": [\n        { \n            \"role\": \"user\", \n            \"content\": \"Me passe um relatório atual do parque de PICs.\" \n        }\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:6000/v1/chat/completions",
+          "host": [
+            "localhost"
+          ],
+          "port": "6000",
+          "path": [
+            "v1",
+            "chat",
+            "completions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "models",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:6000/models",
+          "host": [
+            "localhost"
+          ],
+          "port": "6000",
+          "path": [
+            "models"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
