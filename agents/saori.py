@@ -8,3 +8,4 @@ class SaoriAgent(Agent):
     model = SaoriModel
     model_aliases = ["saori"]
     owned_by = "zeus"
+    hidden = False

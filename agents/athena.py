@@ -8,3 +8,4 @@ class AthenaAgent(Agent):
     model = AthenaModel
     model_aliases = ["athena"]
     owned_by = "zeus"
+    hidden = False

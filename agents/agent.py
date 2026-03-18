@@ -20,6 +20,8 @@ class Agent(ABC):
          (obrigatório, como classe ou instância de models.model.Model).
     """
 
+    hidden: bool = False
+
     _normalize_message_content = staticmethod(normalize_message_content)
     _extract_last_user_message = staticmethod(extract_last_user_message)
 

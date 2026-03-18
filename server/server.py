@@ -230,6 +230,9 @@ class Server:
             models_data = []
 
             for model_id, meta in self.chat_model_registry.items():
+                if meta.get("hidden"):
+                    continue
+
                 models_data.append(
                     {
                         "id": model_id,
@@ -505,6 +508,7 @@ class Server:
             "created": int(getattr(agent, "created", time.time())),
             "owned_by": getattr(agent, "owned_by", "zeus"),
             "aliases": normalized_aliases,
+            "hidden": bool(getattr(agent, "hidden", False)),
         }
 
     def start(self, host="0.0.0.0", port=5000, debug=True):
