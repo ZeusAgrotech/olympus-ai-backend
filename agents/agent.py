@@ -1,5 +1,7 @@
 from abc import ABC
 import datetime as dt
+import queue as _queue
+import threading
 from typing import Any, Dict, List
 
 from flask import jsonify, request
@@ -220,26 +222,55 @@ class Agent(ABC):
             user_input = request_data.get("_last_user_message") or self._extract_last_user_message(messages)
             chat_history = self._to_langchain_history(messages)
 
-            for chunk in self.model.stream(
-                {
-                    "input": user_input,
-                    "chat_history": chat_history,
-                }
-            ):
-                if isinstance(chunk, dict):
-                    if "output" in chunk and chunk["output"]:
-                        yield {"content": str(chunk["output"])}
+            thought_queue = _queue.Queue()
+            chunk_queue = _queue.Queue()
 
+            def _run_stream():
+                try:
+                    for chunk in self.model.stream(
+                        {"input": user_input, "chat_history": chat_history},
+                        thought_queue=thought_queue,
+                    ):
+                        chunk_queue.put(("chunk", chunk))
+                    chunk_queue.put(("done", None))
+                except Exception as exc:
+                    chunk_queue.put(("error", exc))
+
+            threading.Thread(target=_run_stream, daemon=True).start()
+
+            while True:
+                # Drena pensamentos internos acumulados enquanto a ferramenta rodava
+                while not thought_queue.empty():
+                    yield {"thought": thought_queue.get_nowait()}
+
+                try:
+                    item_type, item = chunk_queue.get(timeout=30)
+                except _queue.Empty:
+                    # Timeout de 30s sem chunk → keepalive para manter conexão viva
+                    yield {"keepalive": True}
+                    continue
+
+                if item_type == "done":
+                    # Drena pensamentos restantes antes de encerrar
+                    while not thought_queue.empty():
+                        yield {"thought": thought_queue.get_nowait()}
+                    break
+                if item_type == "error":
+                    raise item
+
+                chunk = item
+                if isinstance(chunk, dict):
                     if "actions" in chunk:
                         for action in chunk["actions"]:
                             label = self._action_to_human_label(action)
                             if label:
                                 yield {"thought": label}
 
-                    # "intermediate_steps" no streaming já foi coberto por "actions"
-                    # (labels amigáveis). Ignorar para não emitir texto técnico bruto.
+                    if "output" in chunk and chunk["output"]:
+                        yield {"content": str(chunk["output"])}
                 else:
-                    yield str(chunk)
+                    if chunk:
+                        yield str(chunk)
             return
 
         if hasattr(self.model, "chat_stream"):

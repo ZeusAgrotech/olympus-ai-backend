@@ -370,10 +370,10 @@ class DiagnosticFullModel(Model):
     ]
 
     thought_labels = {
-        "get_park_overview": "Obtendo visão geral do parque...",
-        "get_pics": "Buscando dispositivos...",
-        "run_complete_diagnosis": "Executando diagnóstico completo (rede, energia)...",
-        "make_grafana_link": "Gerando link do dashboard...",
+        "get_park_overview": "Preciso primeiro ter uma visão geral do parque para entender o cenário atual",
+        "get_pics": "Vou buscar os dispositivos que atendem aos critérios informados",
+        "run_complete_diagnosis": "Agora vou executar o diagnóstico completo de rede e energia nos dispositivos",
+        "make_grafana_link": "Preparando o link do dashboard para visualização no Grafana",
     }
 
     prompt = ChatPromptTemplate.from_messages(

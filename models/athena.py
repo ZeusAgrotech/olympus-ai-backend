@@ -28,7 +28,7 @@ class AthenaModel(Model):
     agents = [DiagnosticFullModel]
 
     thought_labels = {
-        "diagnosis": "Analisando saúde do parque de dispositivos...",
+        "diagnosis": "Vou acionar o agente de diagnóstico para investigar o parque de dispositivos",
     }
 
     prompt = ChatPromptTemplate.from_messages(

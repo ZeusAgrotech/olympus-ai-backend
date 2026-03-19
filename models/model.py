@@ -1,8 +1,32 @@
 from abc import ABC
 from functools import lru_cache
+import queue
+import threading
 
 from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.callbacks.base import BaseCallbackHandler
 import tiktoken
+
+
+# Thread-local para passar o thought_queue aos modelos internos (via as_tool)
+_thought_queue_local = threading.local()
+
+
+class _ThoughtQueueCallback(BaseCallbackHandler):
+    """Callback que captura ações de agentes aninhados e empurra labels para a fila."""
+
+    def __init__(self, thought_labels: dict, thought_queue: queue.Queue):
+        super().__init__()
+        self.thought_labels = thought_labels or {}
+        self.thought_queue = thought_queue
+
+    def on_agent_action(self, action, **kwargs):
+        tool_name = getattr(action, "tool", "") or ""
+        label = self.thought_labels.get(tool_name)
+        if label is None and tool_name:
+            label = f"Consultando {tool_name}..."
+        if label:
+            self.thought_queue.put(label)
 
 
 @lru_cache(maxsize=32)
@@ -87,11 +111,16 @@ class Model(ABC):
                 prompt=self.prompt,
             )
 
+            max_execution_time = getattr(self, "max_execution_time", 600)
+            max_iterations = getattr(self, "max_iterations", 15)
+
             self.agent_executor = AgentExecutor(
                 agent=self.agent_core,
                 tools=self.tools,
                 verbose=self.verbose,
                 return_intermediate_steps=self.return_intermediate_steps,
+                max_execution_time=max_execution_time,
+                max_iterations=max_iterations,
             )
         except Exception as e:
             raise ValueError(
@@ -149,8 +178,14 @@ class Model(ABC):
             if "chat_history" not in input_data:
                 input_data["chat_history"] = []
 
-        # Chamada ao executor
-        response = self.agent_executor.invoke(input_data, *args, **kwargs)
+        # Callback para pensamentos de modelos aninhados
+        tq = getattr(_thought_queue_local, "queue", None)
+        config = {}
+        if tq is not None:
+            thought_labels = getattr(self, "thought_labels", {}) or {}
+            config = {"callbacks": [_ThoughtQueueCallback(thought_labels, tq)]}
+
+        response = self.agent_executor.invoke(input_data, config, *args, **kwargs)
 
         if isinstance(response, dict):
             thought = self._format_intermediate_steps(response.get("intermediate_steps"))
@@ -158,15 +193,22 @@ class Model(ABC):
 
         return response
 
-    def stream(self, input_data: dict, *args, **kwargs):
+    def stream(self, input_data: dict, thought_queue: "queue.Queue | None" = None, *args, **kwargs):
         # Garante que input_data tenha um campo chat_history se não tiver
         if isinstance(input_data, dict):
             if "chat_history" not in input_data:
                 input_data["chat_history"] = []
 
-        # Stream do AgentExecutor
-        for chunk in self.agent_executor.stream(input_data, *args, **kwargs):
-            yield chunk
+        # Disponibiliza o thought_queue para modelos aninhados via thread-local
+        if thought_queue is not None:
+            _thought_queue_local.queue = thought_queue
+
+        try:
+            for chunk in self.agent_executor.stream(input_data, *args, **kwargs):
+                yield chunk
+        finally:
+            if thought_queue is not None:
+                _thought_queue_local.queue = None
 
     def _count_tokens(self, text: str) -> int:
         """Conta tokens usando tiktoken."""
@@ -186,9 +228,9 @@ class Model(ABC):
         from langchain_core.tools import StructuredTool
 
         def invoke_wrapper(input: str):
-            # Sempre passa chat_history vazio ao usar como tool
+            # Repassa o thought_queue do thread corrente (via thread-local) para o invoke interno.
+            # Isso permite que ações internas deste modelo apareçam como pensamentos no stream externo.
             result = self.invoke({"input": input, "chat_history": []})
-            # Garante pós-processamento aplicado (já foi no invoke)
             if isinstance(result, dict) and "output" in result:
                 return result["output"]
             return str(result)

@@ -352,6 +352,14 @@ class Server:
                 def generate():
                     stream_content_parts: List[str] = []
                     stream_thought_parts: List[str] = []
+                    thinking_open = False  # controla se um bloco <think> está aberto
+
+                    def close_thinking():
+                        nonlocal thinking_open
+                        if thinking_open:
+                            thinking_open = False
+                            return send_chunk("\n</think>", None)
+                        return None
 
                     try:
                         for chunk in agent.chat_stream(
@@ -360,9 +368,17 @@ class Server:
                             request_data=request_data,
                         ):
                             if isinstance(chunk, dict):
+                                if chunk.get("keepalive"):
+                                    yield ": keepalive\n\n"
+                                    continue
+
                                 if "content" in chunk and chunk.get("content") is not None:
                                     content_piece = str(chunk.get("content"))
                                     if content_piece:
+                                        # Fecha o bloco de pensamento antes de emitir conteúdo
+                                        closing = close_thinking()
+                                        if closing:
+                                            yield closing
                                         stream_content_parts.append(content_piece)
                                         yield send_chunk(content_piece, None)
 
@@ -374,7 +390,14 @@ class Server:
                                     if thought_stream_mode == Server.ThoughtStreamMode.CUSTOM:
                                         yield send_chunk(None, None, delta={"reasoning": thought_piece})
                                     elif thought_stream_mode == Server.ThoughtStreamMode.CONTENT and thought_piece:
-                                        yield send_chunk(f"<think>{thought_piece}</think>", None)
+                                        thought_line = f"• {thought_piece}..."
+                                        if not thinking_open:
+                                            # Abre o bloco <think> uma única vez
+                                            thinking_open = True
+                                            yield send_chunk(f"<think>\n{thought_line}", None)
+                                        else:
+                                            # Adiciona ao bloco já aberto, separado por linha
+                                            yield send_chunk(f"\n{thought_line}", None)
 
                                 continue
 
@@ -382,6 +405,10 @@ class Server:
                                 chunk_text = str(chunk)
                                 stream_content_parts.append(chunk_text)
                                 yield send_chunk(chunk_text, None)
+
+                        closing = close_thinking()
+                        if closing:
+                            yield closing
 
                         if stream_include_usage:
                             usage = self._build_usage_payload(
