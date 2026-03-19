@@ -13,13 +13,15 @@ fi
 
 # Check for mode flag
 MODE=""
-if [ "$1" == "--docker" ] || [ "$1" == "-D" ]; then
-    MODE="docker"
-    shift
-elif [ "$1" == "--local" ] || [ "$1" == "-l" ]; then
-    MODE="local"
-    shift
-fi
+GCP_FLAG=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --docker|-D) MODE="docker"; shift ;;
+        --local|-l)  MODE="local";  shift ;;
+        --gcp|-G)    GCP_FLAG="--gcp"; shift ;;
+        *) break ;;
+    esac
+done
 
 # Default to local if no mode specified
 if [ -z "$MODE" ]; then
@@ -33,11 +35,13 @@ show_usage() {
     echo "Opções de modo:"
     echo "  -l, --local            Executa localmente (padrão)"
     echo "  -D, --docker           Executa dentro do container Docker"
+    echo "  -G, --gcp              Adiciona chave ao GCP Secret Manager (Cloud Run)"
     echo ""
     echo "Comandos:"
     echo "  create, -c             Cria uma nova chave de API"
     echo "                         Ex: ./keys.sh create \"Cliente A\""
     echo "                         Ex: ./keys.sh -c \"Cliente A\" \"2024-12-31\""
+    echo "                         Ex: ./keys.sh -G create \"Cloud Run Client\""
     echo "  list, -ls              Lista todas as chaves"
     echo "  delete, -rm            Deleta uma chave pelo ID"
     echo "  delete-all, -rma       Deleta TODAS as chaves (com confirmação)"
@@ -74,7 +78,7 @@ case "$command" in
             show_usage
             exit 1
         fi
-        $EXEC_CMD create "$@"
+        $EXEC_CMD $GCP_FLAG create "$@"
         ;;
     list|-ls)
         $EXEC_CMD list

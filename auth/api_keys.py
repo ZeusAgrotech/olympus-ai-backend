@@ -113,7 +113,13 @@ def list_api_keys() -> List[dict]:
 def validate_api_key(raw_key: str) -> bool:
     if not raw_key:
         return False
-        
+
+    # Modo Cloud Run: valida contra AUTH_API_KEY (lista separada por vírgula)
+    env_keys = os.environ.get('AUTH_API_KEY', '')
+    if env_keys:
+        return raw_key in [k.strip() for k in env_keys.split(',') if k.strip()]
+
+    # Modo local: valida contra SQLite
     init_db()
     hashed = hash_key(raw_key)
     conn = get_db()
