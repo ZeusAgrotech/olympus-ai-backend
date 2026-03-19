@@ -28,6 +28,13 @@ class DiagnosticLiteModel(Model):
         DiagnosticFullModel.make_grafana_link,
     ]
 
+    thought_labels = {
+        "get_park_overview": "Preciso ver o panorama geral do parque primeiro",
+        "get_pics": "Buscando os dispositivos pelos critérios informados",
+        "run_complete_diagnosis": "Rodando o diagnóstico de rede e energia nos dispositivos",
+        "make_grafana_link": "Gerando o link do dashboard no Grafana",
+    }
+
     prompt = ChatPromptTemplate.from_messages(
         [
             (

@@ -50,7 +50,7 @@ class Agent(ABC):
         thought_labels = getattr(self.model, "thought_labels", {}) or {}
         if tool_name in thought_labels:
             return thought_labels[tool_name]
-        return f"Consultando {tool_name}..." if tool_name else ""
+        return f"Consultando {tool_name}" if tool_name else ""
 
     @classmethod
     def _to_langchain_history(cls, messages: List[Dict[str, Any]]):

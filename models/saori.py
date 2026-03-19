@@ -26,6 +26,10 @@ class SaoriModel(Model):
 
     agents = [DiagnosticLiteModel]
 
+    thought_labels = {
+        "diagnosis": "Vou consultar o agente de diagnóstico para responder isso",
+    }
+
     prompt = ChatPromptTemplate.from_messages(
         [
             (
