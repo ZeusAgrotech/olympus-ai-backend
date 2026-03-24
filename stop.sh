@@ -2,14 +2,14 @@
 
 echo "Checking for running instances..."
 
-# Check Local
-if lsof -i:6000 -t >/dev/null ; then
-    PID=$(lsof -t -i:6000)
-    echo "Found LOCAL process on port 6000 (PID $PID). Stopping..."
+# Check Local (default dev port in main.py / run.sh)
+if lsof -i:6001 -t >/dev/null ; then
+    PID=$(lsof -t -i:6001)
+    echo "Found LOCAL process on port 6001 (PID $PID). Stopping..."
     kill $PID
     echo "Local process stopped."
 else
-    echo "No LOCAL process found on port 6000."
+    echo "No LOCAL process found on port 6001."
 fi
 
 # Check Docker

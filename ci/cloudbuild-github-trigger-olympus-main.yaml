@@ -1,0 +1,14 @@
+# Cloud Build trigger: push to main -> cloudbuild.yaml
+# Import after the repo is connected to Cloud Build (see docs/olympus-ai-backend/DEPLOY_GCP.md).
+#   gcloud beta builds triggers import --source=ci/cloudbuild-github-trigger-olympus-main.yaml --project=SEU_PROJETO
+
+name: olympus-ai-backend
+description: "Olympus AI backend - build and deploy on push to main"
+github:
+  owner: ZeusAgrotech
+  name: olympus-ai-backend
+  push:
+    branch: ^main$
+filename: cloudbuild.yaml
+substitutions:
+  _IMAGE_TAG: $SHORT_SHA

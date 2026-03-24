@@ -25,6 +25,7 @@ toons
 # ---- Interfaces / APIs ----
 flask
 flask-cors
+gunicorn
 
 # ---- Configuração local ----
 python-dotenv

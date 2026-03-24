@@ -27,11 +27,11 @@
           }
         },
         "url": {
-          "raw": "localhost:6000/v1/chat/completions",
+          "raw": "localhost:6001/v1/chat/completions",
           "host": [
             "localhost"
           ],
-          "port": "6000",
+          "port": "6001",
           "path": [
             "v1",
             "chat",
@@ -47,11 +47,11 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "localhost:6000/models",
+          "raw": "localhost:6001/models",
           "host": [
             "localhost"
           ],
-          "port": "6000",
+          "port": "6001",
           "path": [
             "models"
           ]

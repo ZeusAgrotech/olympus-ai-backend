@@ -31,7 +31,7 @@ O sistema pode ser executado em modo local ou via Docker:
 ### Parar o Servidor
 
 ```bash
-# Para processo local na porta 6000
+# Para processo local na porta 6001
 ./stop.sh --local
 
 # Para container Docker

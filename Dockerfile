@@ -15,9 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 6000
+# Cloud Run sets PORT (often 8080). Default matches local docker-compose.
+EXPOSE 8080
 
 ENV PYTHONPATH=/app
+ENV ENVIRONMENT=production
 
-CMD ["python", "main.py"]
+# Shell form so ${PORT} expands at container start (Cloud Run injects PORT).
+CMD exec gunicorn --bind "0.0.0.0:${PORT:-8080}" --workers 2 --threads 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
