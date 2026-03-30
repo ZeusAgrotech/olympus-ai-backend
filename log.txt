@@ -1,0 +1,669 @@
+nohup: ignorando entrada
+Ensuring port 6001 is free...
+Starting in LOCAL mode...
+Local environment (.venv) already exists. Checking dependencies...
+Requirement already satisfied: langchain-core in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 4)) (1.2.20)
+Requirement already satisfied: langchain-classic in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 5)) (1.0.3)
+Requirement already satisfied: langchain-openai in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 6)) (1.1.11)
+Requirement already satisfied: langchain-ollama in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 9)) (1.0.1)
+Requirement already satisfied: langchain-google-genai in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 10)) (4.2.1)
+Requirement already satisfied: langchain-xai in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 11)) (1.2.2)
+Requirement already satisfied: langchain-weaviate in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 14)) (0.0.6)
+Requirement already satisfied: langchain-text-splitters in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 15)) (1.1.1)
+Requirement already satisfied: weaviate-client in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 18)) (4.20.4)
+Requirement already satisfied: tiktoken in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 19)) (0.12.0)
+Requirement already satisfied: pandas in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 22)) (3.0.1)
+Requirement already satisfied: toons in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 23)) (0.5.3)
+Requirement already satisfied: flask in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 26)) (3.1.3)
+Requirement already satisfied: flask-cors in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 27)) (6.0.2)
+Requirement already satisfied: python-dotenv in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 30)) (1.2.2)
+Requirement already satisfied: pytest in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 33)) (9.0.2)
+Requirement already satisfied: pytest-cov in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 34)) (7.1.0)
+Requirement already satisfied: pytest-mock in ./.venv/lib/python3.12/site-packages (from -r requirements.txt (line 35)) (3.15.1)
+Requirement already satisfied: jsonpatch<2.0.0,>=1.33.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (1.33)
+Requirement already satisfied: langsmith<1.0.0,>=0.3.45 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (0.7.22)
+Requirement already satisfied: packaging>=23.2.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (26.0)
+Requirement already satisfied: pydantic<3.0.0,>=2.7.4 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (2.12.5)
+Requirement already satisfied: pyyaml<7.0.0,>=5.3.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (6.0.3)
+Requirement already satisfied: tenacity!=8.4.0,<10.0.0,>=8.1.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (9.1.4)
+Requirement already satisfied: typing-extensions<5.0.0,>=4.7.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (4.15.0)
+Requirement already satisfied: uuid-utils<1.0,>=0.12.0 in ./.venv/lib/python3.12/site-packages (from langchain-core->-r requirements.txt (line 4)) (0.14.1)
+Requirement already satisfied: requests<3.0.0,>=2.0.0 in ./.venv/lib/python3.12/site-packages (from langchain-classic->-r requirements.txt (line 5)) (2.32.5)
+Requirement already satisfied: sqlalchemy<3.0.0,>=1.4.0 in ./.venv/lib/python3.12/site-packages (from langchain-classic->-r requirements.txt (line 5)) (2.0.48)
+Requirement already satisfied: openai<3.0.0,>=2.26.0 in ./.venv/lib/python3.12/site-packages (from langchain-openai->-r requirements.txt (line 6)) (2.29.0)
+Requirement already satisfied: ollama<1.0.0,>=0.6.0 in ./.venv/lib/python3.12/site-packages (from langchain-ollama->-r requirements.txt (line 9)) (0.6.1)
+Requirement already satisfied: filetype<2.0.0,>=1.2.0 in ./.venv/lib/python3.12/site-packages (from langchain-google-genai->-r requirements.txt (line 10)) (1.2.0)
+Requirement already satisfied: google-genai<2.0.0,>=1.56.0 in ./.venv/lib/python3.12/site-packages (from langchain-google-genai->-r requirements.txt (line 10)) (1.68.0)
+Requirement already satisfied: aiohttp<4.0.0,>=3.9.1 in ./.venv/lib/python3.12/site-packages (from langchain-xai->-r requirements.txt (line 11)) (3.13.3)
+Requirement already satisfied: numpy<3.0,>=1.26.2 in ./.venv/lib/python3.12/site-packages (from langchain-weaviate->-r requirements.txt (line 14)) (2.4.3)
+Requirement already satisfied: simsimd<7.0.0,>=6.2.1 in ./.venv/lib/python3.12/site-packages (from langchain-weaviate->-r requirements.txt (line 14)) (6.5.16)
+Requirement already satisfied: httpx<0.29.0,>=0.26.0 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (0.28.1)
+Requirement already satisfied: validators<1.0.0,>=0.34.0 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (0.35.0)
+Requirement already satisfied: authlib<2.0.0,>=1.6.7 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (1.6.9)
+Requirement already satisfied: grpcio<1.80.0,>=1.59.5 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (1.78.0)
+Requirement already satisfied: protobuf<7.0.0,>=4.21.6 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (6.33.6)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in ./.venv/lib/python3.12/site-packages (from weaviate-client->-r requirements.txt (line 18)) (2.1.0)
+Requirement already satisfied: regex>=2022.1.18 in ./.venv/lib/python3.12/site-packages (from tiktoken->-r requirements.txt (line 19)) (2026.2.28)
+Requirement already satisfied: python-dateutil>=2.8.2 in ./.venv/lib/python3.12/site-packages (from pandas->-r requirements.txt (line 22)) (2.9.0.post0)
+Requirement already satisfied: blinker>=1.9.0 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (1.9.0)
+Requirement already satisfied: click>=8.1.3 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (8.3.1)
+Requirement already satisfied: itsdangerous>=2.2.0 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (2.2.0)
+Requirement already satisfied: jinja2>=3.1.2 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (3.1.6)
+Requirement already satisfied: markupsafe>=2.1.1 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (3.0.3)
+Requirement already satisfied: werkzeug>=3.1.0 in ./.venv/lib/python3.12/site-packages (from flask->-r requirements.txt (line 26)) (3.1.6)
+Requirement already satisfied: iniconfig>=1.0.1 in ./.venv/lib/python3.12/site-packages (from pytest->-r requirements.txt (line 33)) (2.3.0)
+Requirement already satisfied: pluggy<2,>=1.5 in ./.venv/lib/python3.12/site-packages (from pytest->-r requirements.txt (line 33)) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in ./.venv/lib/python3.12/site-packages (from pytest->-r requirements.txt (line 33)) (2.19.2)
+Requirement already satisfied: coverage>=7.10.6 in ./.venv/lib/python3.12/site-packages (from coverage[toml]>=7.10.6->pytest-cov->-r requirements.txt (line 34)) (7.13.5)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (26.1.0)
+Requirement already satisfied: frozenlist>=1.1.1 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (1.8.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (6.7.1)
+Requirement already satisfied: propcache>=0.2.0 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in ./.venv/lib/python3.12/site-packages (from aiohttp<4.0.0,>=3.9.1->langchain-xai->-r requirements.txt (line 11)) (1.23.0)
+Requirement already satisfied: cryptography in ./.venv/lib/python3.12/site-packages (from authlib<2.0.0,>=1.6.7->weaviate-client->-r requirements.txt (line 18)) (46.0.5)
+Requirement already satisfied: anyio<5.0.0,>=4.8.0 in ./.venv/lib/python3.12/site-packages (from google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (4.12.1)
+Requirement already satisfied: google-auth<3.0.0,>=2.47.0 in ./.venv/lib/python3.12/site-packages (from google-auth[requests]<3.0.0,>=2.47.0->google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (2.49.1)
+Requirement already satisfied: websockets<17.0,>=13.0.0 in ./.venv/lib/python3.12/site-packages (from google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (16.0)
+Requirement already satisfied: distro<2,>=1.7.0 in ./.venv/lib/python3.12/site-packages (from google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (1.9.0)
+Requirement already satisfied: sniffio in ./.venv/lib/python3.12/site-packages (from google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (1.3.1)
+Requirement already satisfied: certifi in ./.venv/lib/python3.12/site-packages (from httpx<0.29.0,>=0.26.0->weaviate-client->-r requirements.txt (line 18)) (2026.2.25)
+Requirement already satisfied: httpcore==1.* in ./.venv/lib/python3.12/site-packages (from httpx<0.29.0,>=0.26.0->weaviate-client->-r requirements.txt (line 18)) (1.0.9)
+Requirement already satisfied: idna in ./.venv/lib/python3.12/site-packages (from httpx<0.29.0,>=0.26.0->weaviate-client->-r requirements.txt (line 18)) (3.11)
+Requirement already satisfied: h11>=0.16 in ./.venv/lib/python3.12/site-packages (from httpcore==1.*->httpx<0.29.0,>=0.26.0->weaviate-client->-r requirements.txt (line 18)) (0.16.0)
+Requirement already satisfied: jsonpointer>=1.9 in ./.venv/lib/python3.12/site-packages (from jsonpatch<2.0.0,>=1.33.0->langchain-core->-r requirements.txt (line 4)) (3.1.0)
+Requirement already satisfied: orjson>=3.9.14 in ./.venv/lib/python3.12/site-packages (from langsmith<1.0.0,>=0.3.45->langchain-core->-r requirements.txt (line 4)) (3.11.7)
+Requirement already satisfied: requests-toolbelt>=1.0.0 in ./.venv/lib/python3.12/site-packages (from langsmith<1.0.0,>=0.3.45->langchain-core->-r requirements.txt (line 4)) (1.0.0)
+Requirement already satisfied: xxhash>=3.0.0 in ./.venv/lib/python3.12/site-packages (from langsmith<1.0.0,>=0.3.45->langchain-core->-r requirements.txt (line 4)) (3.6.0)
+Requirement already satisfied: zstandard>=0.23.0 in ./.venv/lib/python3.12/site-packages (from langsmith<1.0.0,>=0.3.45->langchain-core->-r requirements.txt (line 4)) (0.25.0)
+Requirement already satisfied: jiter<1,>=0.10.0 in ./.venv/lib/python3.12/site-packages (from openai<3.0.0,>=2.26.0->langchain-openai->-r requirements.txt (line 6)) (0.13.0)
+Requirement already satisfied: tqdm>4 in ./.venv/lib/python3.12/site-packages (from openai<3.0.0,>=2.26.0->langchain-openai->-r requirements.txt (line 6)) (4.67.3)
+Requirement already satisfied: annotated-types>=0.6.0 in ./.venv/lib/python3.12/site-packages (from pydantic<3.0.0,>=2.7.4->langchain-core->-r requirements.txt (line 4)) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in ./.venv/lib/python3.12/site-packages (from pydantic<3.0.0,>=2.7.4->langchain-core->-r requirements.txt (line 4)) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in ./.venv/lib/python3.12/site-packages (from pydantic<3.0.0,>=2.7.4->langchain-core->-r requirements.txt (line 4)) (0.4.2)
+Requirement already satisfied: six>=1.5 in ./.venv/lib/python3.12/site-packages (from python-dateutil>=2.8.2->pandas->-r requirements.txt (line 22)) (1.17.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in ./.venv/lib/python3.12/site-packages (from requests<3.0.0,>=2.0.0->langchain-classic->-r requirements.txt (line 5)) (3.4.6)
+Requirement already satisfied: urllib3<3,>=1.21.1 in ./.venv/lib/python3.12/site-packages (from requests<3.0.0,>=2.0.0->langchain-classic->-r requirements.txt (line 5)) (2.6.3)
+Requirement already satisfied: greenlet>=1 in ./.venv/lib/python3.12/site-packages (from sqlalchemy<3.0.0,>=1.4.0->langchain-classic->-r requirements.txt (line 5)) (3.3.2)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in ./.venv/lib/python3.12/site-packages (from google-auth<3.0.0,>=2.47.0->google-auth[requests]<3.0.0,>=2.47.0->google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (0.4.2)
+Requirement already satisfied: cffi>=2.0.0 in ./.venv/lib/python3.12/site-packages (from cryptography->authlib<2.0.0,>=1.6.7->weaviate-client->-r requirements.txt (line 18)) (2.0.0)
+Requirement already satisfied: pycparser in ./.venv/lib/python3.12/site-packages (from cffi>=2.0.0->cryptography->authlib<2.0.0,>=1.6.7->weaviate-client->-r requirements.txt (line 18)) (3.0)
+Requirement already satisfied: pyasn1<0.7.0,>=0.6.1 in ./.venv/lib/python3.12/site-packages (from pyasn1-modules>=0.2.1->google-auth<3.0.0,>=2.47.0->google-auth[requests]<3.0.0,>=2.47.0->google-genai<2.0.0,>=1.56.0->langchain-google-genai->-r requirements.txt (line 10)) (0.6.3)
+Local setup ready.
+Starting application...
+Starting Flask Agents Server...
+Available endpoints:
+   - GET  /models              - OpenAI-compatible model listing
+   - GET  /v1/models           - OpenAI-compatible model listing
+   - POST /chat/completions    - OpenAI-compatible chat completions
+   - POST /v1/chat/completions - OpenAI-compatible chat completions
+   - GET  /health              - Health check
+
+Available models:
+   - Athena
+   - Saori
+
+Available tool routes:
+   - (none)
+
+==================================================
+ * Serving Flask app 'server.server'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:6001
+ * Running on http://172.20.0.149:6001
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 919-986-522
+127.0.0.1 - - [24/Mar/2026 11:21:33] "GET /v1/models HTTP/1.1" 200 -
+127.0.0.1 - - [24/Mar/2026 11:21:58] "POST /v1/chat/completions HTTP/1.1" 200 -
+127.0.0.1 - - [24/Mar/2026 11:26:44] "GET /v1/models HTTP/1.1" 200 -
+Starting Flask Agents Server...
+Available endpoints:
+   - GET  /models              - OpenAI-compatible model listing
+   - GET  /v1/models           - OpenAI-compatible model listing
+   - POST /chat/completions    - OpenAI-compatible chat completions
+   - POST /v1/chat/completions - OpenAI-compatible chat completions
+   - GET  /health              - Health check
+
+Available models:
+   - Athena
+   - Saori
+
+Available tool routes:
+   - (none)
+
+==================================================
+
+
+[1m> Entering new None chain...[0m
+[32;1m[1;3m
+Invoking: `diagnosis` with `{'input': 'O usuário quer uma visão geral do status atual do parque de dispositivos (PICs). Forneça um overview completo e objetivo do parque neste momento, destacando: total de dispositivos, quantos online/offline/standby, principais alertas ou anomalias, problemas de rede (LoRa/Wi‑Fi), energia (solar/bateria), grupos ou clientes mais críticos e links relevantes de dashboard Grafana, se disponíveis. Responda em formato estruturado para síntese ao usuário.'}`
+
+
+[0m
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `get_park_overview` with `{'reference_date': '2026-03-24'}`
+
+
+[0m[36;1m[1;3m[Get Park Metrics]
+mcp_response[1]:
+  - result:
+      cellular:
+        offline[1]{avg,inst,pct,std,trend,variation}:
+          12,10,1.0214504596527068,2,down,-16.666666666666664
+        online[1]{avg,inst,pct,std,trend,variation}:
+          957.6666666666666,956,97.65066394279877,2.0816659994661326,down,-0.4166666666666667
+        standby[1]{avg,inst,pct,std,trend,variation}:
+          9.333333333333334,13,1.3278855975485189,3.2145502536643185,up,85.71428571428571
+      lora:
+        offline[1]{avg,inst,pct,std,trend,variation}:
+          7,8,3.088803088803089,1,up,33.33333333333333
+        online[1]{avg,inst,pct,std,trend,variation}:
+          245.66666666666666,245,94.5945945945946,1.1547005383792515,stable,0
+        standby[1]{avg,inst,pct,std,trend,variation}:
+          6.333333333333333,6,2.3166023166023164,1.5275252316519468,down,-25
+      satellite:
+        offline[1]{avg,inst,pct,std,trend,variation}:
+          9.333333333333334,9,1.5202702702702704,0.5773502691896257,down,-10
+        online[1]{avg,inst,pct,std,trend,variation}:
+          547.3333333333334,549,92.73648648648648,6.6583281184793925,up,1.6666666666666667
+        standby[1]{avg,inst,pct,std,trend,variation}:
+          35.333333333333336,34,5.743243243243244,6.110100926607787,down,-19.047619047619047
+      total:
+        offline[1]{avg,inst,pct,std,trend,variation}:
+          28.333333333333332,27,1.44076840981857,1.5275252316519468,down,-3.571428571428571
+        online[1]{avg,inst,pct,std,trend,variation}:
+          1793,1792,95.62433297758804,6.557438524302,up,0.27979854504756574
+        standby[1]{avg,inst,pct,std,trend,variation}:
+          52.666666666666664,55,2.934898612593383,7.767453465154029,down,-6.779661016949152
+      wifi:
+        offline[1]{avg,inst,pct,std,trend,variation}:
+          0,0,0,0,stable,0
+        online[1]{avg,inst,pct,std,trend,variation}:
+          42.333333333333336,42,95.45454545454545,0.5773502691896257,stable,0
+        standby[1]{avg,inst,pct,std,trend,variation}:
+          1.6666666666666667,2,4.545454545454546,0.5773502691896257,stable,0
+    success: true
+    tool: get_park_info
+
+[Get Not Online PICs]
+mcp_response[1]:
+  - result:
+      cellular:
+        offline:
+          "ATVOS BIOENERGIA BRENCO S.A. - (P)":
+            pic_id[1]: 25352
+          "Bom Futuro (P)":
+            pic_id[1]: 27205
+          "Girassol Agrícola Ltda (P) (S)":
+            pic_id[1]: 4648
+          "Rodrigo Mesquita (P) (S)":
+            pic_id[1]: 967
+          "Usina BP Bunge (P) (S)":
+            pic_id[3]: 23402,23669,23142
+          "Usina Raízen Energia (P) (S)":
+            pic_id[4]: 8589,937,8188,843
+        standby:
+          "ATVOS BIOENERGIA BRENCO S.A. - (P)":
+            pic_id[6]: 26231,26159,13768,26216,26236,14934
+          "Bracell S.P. Florestal Ltda (P) (S)":
+            pic_id[2]: 26133,26116
+          "CANAROEIRA - ASSOCIACAO DOS FORNECEDORES DE CANA DA BIONERGETICA AROEIRA (P) (S)":
+            pic_id[1]: 4927
+          "Nardini Agroindustrial Ltda (P)":
+            pic_id[3]: 26452,23603,26038
+          "Ricardo Cordeiro Qaddur - Agrex  (P) (S) (Em Cancelamento)":
+            pic_id[1]: 17748
+          "Usina BP Bunge (P) (S)":
+            pic_id[3]: 21731,25099,23655
+          "Usina Da Mata S.A - Açúcar e Álcool (P) (S)":
+            pic_id[2]: 27171,27172
+          "Usina Pitangueiras (P) (S)":
+            pic_id[1]: 2974
+          "Usina Santa Adélia S/A (P)":
+            pic_id[1]: 11539
+      lora:
+        offline:
+          "Bom Futuro (P)":
+            pic_id[1]: 25081
+          "Celio Antônio Weiler (P)":
+            pic_id[1]: 21729
+          "Girassol Agrícola Ltda (P) (S)":
+            pic_id[4]: 3294,4745,4763,4716
+          "Usina BP Bunge (P) (S)":
+            pic_id[2]: 12359,21782
+        standby:
+          "ATVOS BIOENERGIA BRENCO S.A. - (P)":
+            pic_id[1]: 26147
+          "Alzir Pimentel Aguiar Neto":
+            pic_id[4]: 16417,16403,16250,16205
+          "Grupo Brasil Agro (P)":
+            pic_id[1]: 27232
+          "Nardini Agroindustrial Ltda (P)":
+            pic_id[1]: 26306
+          "Silvana Maria Vizotto Varnier (P)":
+            pic_id[1]: 2243
+          "Usina BP Bunge (P) (S)":
+            pic_id[1]: 23639
+      satellite:
+        offline:
+          "ACP BIOENERGIA LTDA (P) (S)":
+            pic_id[1]: 22639
+          "Algar Farming (P) (S) (C) C=PIC Faz Canadá":
+            pic_id[1]: 22478
+          "Antonio Modesto (P)":
+            pic_id[1]: 26745
+          "Bom Futuro (P)":
+            pic_id[1]: 25155
+          "Daniele Pozzobon - Agrex (P) (Em Cancelamento)":
+            pic_id[1]: 21821
+          "Fazenda Malanda – Mariangela de Abreu Costantini e Outros (P) (S)":
+            pic_id[1]: 10718
+          "Guilherme Resende Cruvinel - Agrex (P) (S) (Em Cancelamento)":
+            pic_id[2]: 13793,9074
+          "Heliodoro Souza Junior- Agrex (P) (S) (Em Cancelamento)":
+            pic_id[1]: 7597
+          "Usina Boa Vista - (P) (S)":
+            pic_id[1]: 3468
+        standby:
+          "ATVOS BIOENERGIA BRENCO S.A. - (P)":
+            pic_id[1]: 25664
+          "Alzir Pimentel Aguiar Neto":
+            pic_id[1]: 15011
+          "Bom Futuro (P)":
+            pic_id[1]: 26575
+          "Décio Luiz Meda - Coplacana (P)":
+            pic_id[1]: 23453
+          "Usina Lins (P) (S)":
+            pic_id[1]: 10720
+          "Ângelo Giuliani - Cleiton Luís (P) (S)":
+            pic_id[1]: 9073
+      wifi:
+        standby:
+          "Usina Cerradão (P) (S)":
+            pic_id[1]: 1811
+    success: true
+    tool: get_pics[0m[32;1m[1;3m
+Invoking: `run_complete_diagnosis` with `{'status_list': ['offline', 'standby'], 'reference_date': '2026-03-24'}`
+
+
+[0m[38;5;200m[1;3m[Check Solar Panel]
+mcp_response[1]:
+  - result:
+      inefficient_panel[3]: 937,4648,25155
+      insufficient_data[9]: 843,3294,4745,9074,16417,22639,23639,25081,26745
+      ok[53]: 967,1811,2243,2974,3468,4716,4763,4927,7597,8188,8589,9073,10718,10720,11539,12359,13768,13793,14934,15011,16205,16250,16403,17748,21729,21731,21782,21821,22478,23142,23402,23453,23603,23655,23669,25099,25352,25664,26038,26116,26133,26147,26159,26216,26231,26236,26306,26452,26575,27171,27172,27205,27232
+    success: true
+    tool: check_solar_panel
+
+[Check WiFi Network]
+mcp_response[1]:
+  - result:
+      hardware_or_router_distance[1]: 1811
+      not_wifi_pics[64]: 22478,3294,13793,21821,4745,4648,4716,4763,8589,7597,9074,967,937,8188,26745,25081,10718,23402,843,25155,25352,23669,12359,27205,21782,22639,21731,17748,21729,27171,27172,26231,26575,2974,11539,4927,16417,25099,3468,15011,26159,26147,26133,26116,16250,27232,16403,16205,23453,23142,23639,23603,26038,26216,26236,26306,26452,13768,14934,23655,9073,25664,10720,2243
+    success: true
+    tool: check_wifi_network
+
+[Check Battery Health]
+mcp_response[1]:
+  - result:
+      battery_disconnected[1]: 16205
+      battery_imbalance[9]: 7597,21782,17748,21821,21731,13793,22478,3468,21729
+      charging_system_error[1]: 15011
+      insufficient_data[9]: 3294,4745,16417,22639,843,23639,25081,26745,9074
+      ok[45]: 23669,26133,26575,967,27232,10718,26038,27205,1811,8188,11539,4927,4716,4763,13768,14934,16403,23402,23453,937,25352,26236,27172,26452,23603,26216,23655,12359,26159,25155,4648,26116,26147,8589,26231,2243,2974,27171,23142,9073,10720,16250,25664,25099,26306
+    success: true
+    tool: check_battery
+
+[Check LoRa Network]
+mcp_response[1]:
+  - result:
+      gateway_not_online:
+        "15011"[4]: 16417,16250,16403,16205
+        "26159"[1]: 26147
+        "4648"[4]: 3294,4745,4716,4763
+      lora_hardware_or_signal_obstruction_error:
+        "16929"[1]: 21782
+        "1911"[1]: 2243
+        "21670"[1]: 23639
+        "22988"[1]: 21729
+        "23603"[1]: 26306
+        "23666"[1]: 12359
+        "25087"[1]: 25081
+        "26507"[1]: 27232
+      not_lora_pics[48]: 4648,8589,967,937,8188,23402,843,25352,23669,27205,23142,21731,17748,27171,27172,26231,2974,11539,4927,25099,26159,26133,26116,23603,26038,26216,26236,26452,13768,14934,23655,22478,13793,21821,7597,9074,26745,10718,25155,22639,3468,26575,15011,23453,9073,25664,10720,1811
+    success: true
+    tool: check_lora_network[0m[32;1m[1;3m
+Invoking: `make_grafana_link` with `{'status_list': ['offline', 'standby'], 'reference_date': '2026-03-24'}`
+
+
+[0m[36;1m[1;3mhttps://grafana.zeusagro.com/d/cdx363gwydibka/pics-overview?orgId=1&from=now-7d&to=now&timezone=browser&var-data_source=c60cbd8c-582e-4d7d-9781-7022bb41448e&var-client_situation=$__all&var-client_name=$__all&var-client=$__all&var-visible=Sim&var-test_mode=Nao&var-hardware_version=$__all&var-code_version=$__all&var-communication_type=$__all&var-type=$__all&var-pic_name=$__all&var-delay_min=0%20hours&var-delay_max=5%20year&var-has_wind_sensor=All&var-has_solar_sensor=All&var-gtw=$__all&&var-equipe04=$__all&var-equipe02=$__all&var-sem_pic=$__all&var-equipe03=$__all&var-equipe=$__all&var-nearby_pic=7&var-radius=2&var-data_source_mysql=ae788b24-f07f-4c9b-95b9-5f3b1863d338&var-pic=843&var-pic=937&var-pic=967&var-pic=1811&var-pic=2243&var-pic=2974&var-pic=3294&var-pic=3468&var-pic=4648&var-pic=4716&var-pic=4745&var-pic=4763&var-pic=4927&var-pic=7597&var-pic=8188&var-pic=8589&var-pic=9073&var-pic=9074&var-pic=10718&var-pic=10720&var-pic=11539&var-pic=12359&var-pic=13768&var-pic=13793&var-pic=14934&var-pic=15011&var-pic=16205&var-pic=16250&var-pic=16403&var-pic=16417&var-pic=17748&var-pic=21729&var-pic=21731&var-pic=21782&var-pic=21821&var-pic=22478&var-pic=22639&var-pic=23142&var-pic=23402&var-pic=23453&var-pic=23603&var-pic=23639&var-pic=23655&var-pic=23669&var-pic=25081&var-pic=25099&var-pic=25155&var-pic=25352&var-pic=25664&var-pic=26038&var-pic=26116&var-pic=26133&var-pic=26147&var-pic=26159&var-pic=26216&var-pic=26231&var-pic=26236&var-pic=26306&var-pic=26452&var-pic=26575&var-pic=26745&var-pic=27171&var-pic=27172&var-pic=27205&var-pic=27232[0m[32;1m[1;3m# Análise do Parque de PICs Titan
+24 de março de 2026
+
+## Resumo Executivo
+- O parque está **amplamente operacional**, com **1.874 PICs no total**, sendo **1.792 Online**, **27 Offline** e **55 Standby**.
+- O movimento atual é **positivo no agregado**: a **queda de Offline acompanha aumento de Online**, indicando recuperação efetiva de parte das PICs.
+- Ao mesmo tempo, ainda há **55 dispositivos em Standby**, que representam a principal janela de risco preventivo antes de nova evolução para Offline.
+- Os alertas mais relevantes concentram-se em **LoRa** (gateways indisponíveis e obstrução/sinal), **energia** (baterias degradadas e falhas de carga) e **solar** (painel ineficiente).
+- **Satélite** apresenta o maior volume de Standby entre as tecnologias, enquanto **LoRa** é a tecnologia com **maior criticidade proporcional em Offline**.
+- Clientes com maior concentração de não-online no momento: **ATVOS BIOENERGIA BRENCO S.A.**, **Usina BP Bunge**, **Bom Futuro**, **Girassol Agrícola Ltda** e **Alzir Pimentel Aguiar Neto**.
+
+## 1. Métricas globais
+- O cenário geral mostra **recuperação do parque**, pois a **redução de Offline ocorre junto ao aumento de Online**, o que indica retorno direto de falha para operação normal.
+- Também há **redução de Standby no total**, sugerindo que parte dos dispositivos em degradação está conseguindo retornar para Online em vez de evoluir para Offline.
+- O principal ponto de atenção está em grupos específicos de **LoRa e Satélite**, onde ainda existem bolsões de degradação e falha concentrada.
+
+| Status  | Absoluto | Relativo | Tendência |
+| :---    |   ---:   |   ---:   | :---:     |
+| Offline | 27 | 1,44% | ↘ (-3,57%) |
+| Standby | 55 | 2,93% | ↘ (-6,78%) |
+| Online  | 1.792 | 95,62% | ↗ (+0,28%) |
+| **Total** | **1.874** | **100%** | → (0%) |
+
+### Pontos positivos
+- **Offline em queda com Online em alta**, sinal claro de recuperação efetiva.
+- **Wi‑Fi** está estável, sem PICs offline no momento.
+- **Celular** mantém alta disponibilidade absoluta, com **956 PICs online**.
+- Parte relevante dos problemas energéticos está concentrada em poucos dispositivos, não disseminada no parque inteiro.
+
+### Pontos de atenção
+- **55 PICs em Standby** ainda exigem ação preventiva, pois esse estado pode retornar a Online ou evoluir para Offline.
+- **Satélite** concentra **34 PICs em Standby**, o maior volume absoluto entre as tecnologias.
+- **Celular** teve aumento expressivo de Standby, indicando saída de parte dos dispositivos de Online para estado intermediário de risco.
+
+### Pontos críticos
+- **LoRa** tem o maior percentual de **Offline (3,09%)**, com dependência direta de gateways.
+- Há **gateways LoRa indisponíveis** afetando múltiplas PICs simultaneamente.
+- Foram detectadas **9 PICs com bateria desgastada/desbalanceada**, além de casos de **bateria desconectada** e **falha no sistema de carga**.
+- Há **3 PICs com painel solar ineficiente**, com risco de degradação energética progressiva.
+
+### Estratificação por tecnologia
+
+| Tecnologia | Offline | Standby | Online |
+| :---       | :---: | :---: | :---: |
+| Celular    | 12 ↘ (-16,67%) | 13 ↗ (+85,71%) | 956 ↘ (-0,42%) |
+| LoRa       | 8 ↗ (+33,33%) | 6 ↘ (-25,00%) | 245 → (0,00%) |
+| Satélite   | 9 ↘ (-10,00%) | 34 ↘ (-19,05%) | 549 ↗ (+1,67%) |
+| Wi‑Fi      | 0 → (0,00%) | 2 → (0,00%) | 42 → (0,00%) |
+| **Total**  | **27 ↘ (-3,57%)** | **55 ↘ (-6,78%)** | **1.792 ↗ (+0,28%)** |
+
+### Leituras rápidas por tecnologia
+- **Celular**
+  - A **queda de Online ocorre junto ao aumento de Standby**, indicando **degradação inicial** em parte da base.
+  - Como **Offline cai**, ainda não há evidência de agravamento amplo para falha total.
+  - *Leitura:* prioridade preventiva nas PICs em Standby.
+
+- **LoRa**
+  - Há combinação de **Offline em alta** com **Online estável** e **Standby em queda**, o que indica que parte dos dispositivos que estavam degradados **evoluiu para falha efetiva**.
+  - *Leitura:* é a tecnologia mais crítica agora, especialmente por impacto em grupo via gateway.
+
+- **Satélite**
+  - A **queda de Standby acompanha o aumento de Online**, indicando **recuperação operacional**.
+  - O volume de Standby ainda é alto, mas o fluxo atual é favorável.
+  - *Leitura:* monitorar, sem sinal de colapso estrutural imediato.
+
+- **Wi‑Fi**
+  - Cenário estável, sem offline e com baixo volume de Standby.
+  - *Leitura:* baixa criticidade no momento.
+
+## 2. Análise por problemas
+
+### 2.0 Dispositivos com comunicação degradada ou interrompida
+
+| PICs | Tecnologia | Status |
+|---|---|---|
+| 25352, 27205, 4648, 967, 23402, 23669, 23142, 8589, 937, 8188, 843 | Celular | offline |
+| 26231, 26159, 13768, 26216, 26236, 14934, 26133, 26116, 4927, 26452, 23603, 26038, 17748, 21731, 25099, 23655, 27171, 27172, 2974, 11539 | Celular | standby |
+| 25081, 21729, 3294, 4745, 4763, 4716, 12359, 21782 | LoRa | offline |
+| 26147, 16417, 16403, 16250, 16205, 27232, 26306, 2243, 23639 | LoRa | standby |
+| 22639, 22478, 26745, 25155, 21821, 10718, 13793, 9074, 7597, 3468 | Satélite | offline |
+| 25664, 15011, 26575, 23453, 10720, 9073 | Satélite | standby |
+| 1811 | Wi‑Fi | standby |
+
+### 2.1 Energia
+
+#### 2.1.1 Painel Solar
+
+##### Painel ineficiente por sujeira, sombra, obstrução ou baixa irradiação
+- **PICs:** 937, 4648, 25155
+- **Sintoma:** geração solar abaixo do esperado, com risco de degradação progressiva de energia e perda de estabilidade operacional.
+- **Solução:**  
+  - **Cliente ou equipe de campo** deve **inspecionar, limpar o painel e remover obstruções** **nas próximas 24–48h**.
+
+#### 2.1.2 Bateria
+
+##### Bateria desconectada do sistema
+- **PICs:** 16205
+- **Sintoma:** o dispositivo perde sustentação energética e pode sair de Standby para Offline se não houver recarga efetiva.
+- **Solução:**  
+  - **Equipe de campo** deve **verificar e reconectar a bateria** **em até 24h**.
+
+##### Bateria desgastada ou desbalanceada
+- **PICs:** 7597, 21782, 17748, 21821, 21731, 13793, 22478, 3468, 21729
+- **Sintoma:** autonomia reduzida e maior chance de ciclos de instabilidade, com falha recorrente de operação.
+- **Solução:**  
+  - **Equipe de manutenção** deve **testar capacidade e programar troca da bateria ou do equipamento** **em até 72h**.
+
+##### Falha no sistema de carga / BMS
+- **PICs:** 15011
+- **Sintoma:** a bateria não carrega corretamente mesmo com disponibilidade de energia, aumentando risco de evolução para Offline.
+- **Solução:**  
+  - **Equipe técnica** deve **inspecionar regulador/BMS e substituir componentes, se necessário** **em até 48h**.
+
+### 2.2 Redes
+
+#### 2.2.1 Wi‑Fi
+
+##### Distância excessiva do roteador ou falha de hardware Wi‑Fi
+- **PICs:** 1811
+- **Sintoma:** comunicação degradada, mantendo o dispositivo em Standby.
+- **Solução:**  
+  - **Cliente local ou equipe de campo** deve **verificar sinal, reposicionar o roteador/antena ou avaliar hardware Wi‑Fi** **em até 48h**.
+
+#### 2.2.2 LoRa
+
+##### Gateway LoRa indisponível
+
+| Gateway | PICs Afetadas | Status Gateway |
+|---------|--------------|----------------|
+| 15011 | 16417, 16250, 16403, 16205 | Offline |
+| 26159 | 26147 | Offline |
+| 4648 | 3294, 4745, 4716, 4763 | Offline |
+
+- **Sintoma:** múltiplas PICs perdem comunicação por dependência do mesmo gateway.
+- **Solução:**  
+  - **Equipe de campo** deve **verificar energia, internet, alimentação e operação física do gateway** **em até 24h**.
+
+##### Obstrução de sinal LoRa ou falha de rádio/antena
+- **PICs:** 21782, 2243, 23639, 21729, 26306, 12359, 25081, 27232
+- **Sintoma:** comunicação intermitente ou interrompida, com tendência de permanência em Standby ou evolução para Offline.
+- **Solução:**  
+  - **Equipe de campo** deve **inspecionar antenas, conectores e visada de sinal, além de remapear a malha se necessário** **em até 48–72h**.
+
+### 2.3 Outros / Diagnósticos inconclusivos
+- Listar aqui PICs com dados insuficientes (sem histórico, poucas leituras de solar/bateria).
+
+#### Poucos dados solares recentes
+- **PICs:** 843, 3294, 4745, 9074, 16417, 22639, 23639, 25081, 26745
+- **Causa:** poucas amostras para conclusão do diagnóstico solar.
+- **Solução:**  
+  - **Suporte/monitoramento** deve **acompanhar novas leituras e reavaliar o diagnóstico** **nas próximas 24–48h**.
+
+#### Poucos dados de bateria
+- **PICs:** 3294, 4745, 16417, 22639, 843, 23639, 25081, 26745, 9074
+- **Causa:** histórico insuficiente para concluir a saúde da bateria.
+- **Solução:**  
+  - **Suporte/monitoramento** deve **validar recebimento de telemetria e repetir análise após novo ciclo de dados** **em 24–48h**.
+
+## 3. Links
+- **Dashboard Grafana (filtro automático pelos PICs afetados):**  
+  [Dashboard Grafana](https://grafana.zeusagro.com/d/cdx363gwydibka/pics-overview?orgId=1&from=now-7d&to=now&timezone=browser&var-data_source=c60cbd8c-582e-4d7d-9781-7022bb41448e&var-client_situation=$__all&var-client_name=$__all&var-client=$__all&var-visible=Sim&var-test_mode=Nao&var-hardware_version=$__all&var-code_version=$__all&var-communication_type=$__all&var-type=$__all&var-pic_name=$__all&var-delay_min=0%20hours&var-delay_max=5%20year&var-has_wind_sensor=All&var-has_solar_sensor=All&var-gtw=$__all&&var-equipe04=$__all&var-equipe02=$__all&var-sem_pic=$__all&var-equipe03=$__all&var-equipe=$__all&var-nearby_pic=7&var-radius=2&var-data_source_mysql=ae788b24-f07f-4c9b-95b9-5f3b1863d338&var-pic=843&var-pic=937&var-pic=967&var-pic=1811&var-pic=2243&var-pic=2974&var-pic=3294&var-pic=3468&var-pic=4648&var-pic=4716&var-pic=4745&var-pic=4763&var-pic=4927&var-pic=7597&var-pic=8188&var-pic=8589&var-pic=9073&var-pic=9074&var-pic=10718&var-pic=10720&var-pic=11539&var-pic=12359&var-pic=13768&var-pic=13793&var-pic=14934&var-pic=15011&var-pic=16205&var-pic=16250&var-pic=16403&var-pic=16417&var-pic=17748&var-pic=21729&var-pic=21731&var-pic=21782&var-pic=21821&var-pic=22478&var-pic=22639&var-pic=23142&var-pic=23402&var-pic=23453&var-pic=23603&var-pic=23639&var-pic=23655&var-pic=23669&var-pic=25081&var-pic=25099&var-pic=25155&var-pic=25352&var-pic=25664&var-pic=26038&var-pic=26116&var-pic=26133&var-pic=26147&var-pic=26159&var-pic=26216&var-pic=26231&var-pic=26236&var-pic=26306&var-pic=26452&var-pic=26575&var-pic=26745&var-pic=27171&var-pic=27172&var-pic=27205&var-pic=27232)[0m
+
+[1m> Finished chain.[0m
+[36;1m[1;3m# Análise do Parque de PICs Titan
+24 de março de 2026
+
+## Resumo Executivo
+- O parque está **amplamente operacional**, com **1.874 PICs no total**, sendo **1.792 Online**, **27 Offline** e **55 Standby**.
+- O movimento atual é **positivo no agregado**: a **queda de Offline acompanha aumento de Online**, indicando recuperação efetiva de parte das PICs.
+- Ao mesmo tempo, ainda há **55 dispositivos em Standby**, que representam a principal janela de risco preventivo antes de nova evolução para Offline.
+- Os alertas mais relevantes concentram-se em **LoRa** (gateways indisponíveis e obstrução/sinal), **energia** (baterias degradadas e falhas de carga) e **solar** (painel ineficiente).
+- **Satélite** apresenta o maior volume de Standby entre as tecnologias, enquanto **LoRa** é a tecnologia com **maior criticidade proporcional em Offline**.
+- Clientes com maior concentração de não-online no momento: **ATVOS BIOENERGIA BRENCO S.A.**, **Usina BP Bunge**, **Bom Futuro**, **Girassol Agrícola Ltda** e **Alzir Pimentel Aguiar Neto**.
+
+## 1. Métricas globais
+- O cenário geral mostra **recuperação do parque**, pois a **redução de Offline ocorre junto ao aumento de Online**, o que indica retorno direto de falha para operação normal.
+- Também há **redução de Standby no total**, sugerindo que parte dos dispositivos em degradação está conseguindo retornar para Online em vez de evoluir para Offline.
+- O principal ponto de atenção está em grupos específicos de **LoRa e Satélite**, onde ainda existem bolsões de degradação e falha concentrada.
+
+| Status  | Absoluto | Relativo | Tendência |
+| :---    |   ---:   |   ---:   | :---:     |
+| Offline | 27 | 1,44% | ↘ (-3,57%) |
+| Standby | 55 | 2,93% | ↘ (-6,78%) |
+| Online  | 1.792 | 95,62% | ↗ (+0,28%) |
+| **Total** | **1.874** | **100%** | → (0%) |
+
+### Pontos positivos
+- **Offline em queda com Online em alta**, sinal claro de recuperação efetiva.
+- **Wi‑Fi** está estável, sem PICs offline no momento.
+- **Celular** mantém alta disponibilidade absoluta, com **956 PICs online**.
+- Parte relevante dos problemas energéticos está concentrada em poucos dispositivos, não disseminada no parque inteiro.
+
+### Pontos de atenção
+- **55 PICs em Standby** ainda exigem ação preventiva, pois esse estado pode retornar a Online ou evoluir para Offline.
+- **Satélite** concentra **34 PICs em Standby**, o maior volume absoluto entre as tecnologias.
+- **Celular** teve aumento expressivo de Standby, indicando saída de parte dos dispositivos de Online para estado intermediário de risco.
+
+### Pontos críticos
+- **LoRa** tem o maior percentual de **Offline (3,09%)**, com dependência direta de gateways.
+- Há **gateways LoRa indisponíveis** afetando múltiplas PICs simultaneamente.
+- Foram detectadas **9 PICs com bateria desgastada/desbalanceada**, além de casos de **bateria desconectada** e **falha no sistema de carga**.
+- Há **3 PICs com painel solar ineficiente**, com risco de degradação energética progressiva.
+
+### Estratificação por tecnologia
+
+| Tecnologia | Offline | Standby | Online |
+| :---       | :---: | :---: | :---: |
+| Celular    | 12 ↘ (-16,67%) | 13 ↗ (+85,71%) | 956 ↘ (-0,42%) |
+| LoRa       | 8 ↗ (+33,33%) | 6 ↘ (-25,00%) | 245 → (0,00%) |
+| Satélite   | 9 ↘ (-10,00%) | 34 ↘ (-19,05%) | 549 ↗ (+1,67%) |
+| Wi‑Fi      | 0 → (0,00%) | 2 → (0,00%) | 42 → (0,00%) |
+| **Total**  | **27 ↘ (-3,57%)** | **55 ↘ (-6,78%)** | **1.792 ↗ (+0,28%)** |
+
+### Leituras rápidas por tecnologia
+- **Celular**
+  - A **queda de Online ocorre junto ao aumento de Standby**, indicando **degradação inicial** em parte da base.
+  - Como **Offline cai**, ainda não há evidência de agravamento amplo para falha total.
+  - *Leitura:* prioridade preventiva nas PICs em Standby.
+
+- **LoRa**
+  - Há combinação de **Offline em alta** com **Online estável** e **Standby em queda**, o que indica que parte dos dispositivos que estavam degradados **evoluiu para falha efetiva**.
+  - *Leitura:* é a tecnologia mais crítica agora, especialmente por impacto em grupo via gateway.
+
+- **Satélite**
+  - A **queda de Standby acompanha o aumento de Online**, indicando **recuperação operacional**.
+  - O volume de Standby ainda é alto, mas o fluxo atual é favorável.
+  - *Leitura:* monitorar, sem sinal de colapso estrutural imediato.
+
+- **Wi‑Fi**
+  - Cenário estável, sem offline e com baixo volume de Standby.
+  - *Leitura:* baixa criticidade no momento.
+
+## 2. Análise por problemas
+
+### 2.0 Dispositivos com comunicação degradada ou interrompida
+
+| PICs | Tecnologia | Status |
+|---|---|---|
+| 25352, 27205, 4648, 967, 23402, 23669, 23142, 8589, 937, 8188, 843 | Celular | offline |
+| 26231, 26159, 13768, 26216, 26236, 14934, 26133, 26116, 4927, 26452, 23603, 26038, 17748, 21731, 25099, 23655, 27171, 27172, 2974, 11539 | Celular | standby |
+| 25081, 21729, 3294, 4745, 4763, 4716, 12359, 21782 | LoRa | offline |
+| 26147, 16417, 16403, 16250, 16205, 27232, 26306, 2243, 23639 | LoRa | standby |
+| 22639, 22478, 26745, 25155, 21821, 10718, 13793, 9074, 7597, 3468 | Satélite | offline |
+| 25664, 15011, 26575, 23453, 10720, 9073 | Satélite | standby |
+| 1811 | Wi‑Fi | standby |
+
+### 2.1 Energia
+
+#### 2.1.1 Painel Solar
+
+##### Painel ineficiente por sujeira, sombra, obstrução ou baixa irradiação
+- **PICs:** 937, 4648, 25155
+- **Sintoma:** geração solar abaixo do esperado, com risco de degradação progressiva de energia e perda de estabilidade operacional.
+- **Solução:**  
+  - **Cliente ou equipe de campo** deve **inspecionar, limpar o painel e remover obstruções** **nas próximas 24–48h**.
+
+#### 2.1.2 Bateria
+
+##### Bateria desconectada do sistema
+- **PICs:** 16205
+- **Sintoma:** o dispositivo perde sustentação energética e pode sair de Standby para Offline se não houver recarga efetiva.
+- **Solução:**  
+  - **Equipe de campo** deve **verificar e reconectar a bateria** **em até 24h**.
+
+##### Bateria desgastada ou desbalanceada
+- **PICs:** 7597, 21782, 17748, 21821, 21731, 13793, 22478, 3468, 21729
+- **Sintoma:** autonomia reduzida e maior chance de ciclos de instabilidade, com falha recorrente de operação.
+- **Solução:**  
+  - **Equipe de manutenção** deve **testar capacidade e programar troca da bateria ou do equipamento** **em até 72h**.
+
+##### Falha no sistema de carga / BMS
+- **PICs:** 15011
+- **Sintoma:** a bateria não carrega corretamente mesmo com disponibilidade de energia, aumentando risco de evolução para Offline.
+- **Solução:**  
+  - **Equipe técnica** deve **inspecionar regulador/BMS e substituir componentes, se necessário** **em até 48h**.
+
+### 2.2 Redes
+
+#### 2.2.1 Wi‑Fi
+
+##### Distância excessiva do roteador ou falha de hardware Wi‑Fi
+- **PICs:** 1811
+- **Sintoma:** comunicação degradada, mantendo o dispositivo em Standby.
+- **Solução:**  
+  - **Cliente local ou equipe de campo** deve **verificar sinal, reposicionar o roteador/antena ou avaliar hardware Wi‑Fi** **em até 48h**.
+
+#### 2.2.2 LoRa
+
+##### Gateway LoRa indisponível
+
+| Gateway | PICs Afetadas | Status Gateway |
+|---------|--------------|----------------|
+| 15011 | 16417, 16250, 16403, 16205 | Offline |
+| 26159 | 26147 | Offline |
+| 4648 | 3294, 4745, 4716, 4763 | Offline |
+
+- **Sintoma:** múltiplas PICs perdem comunicação por dependência do mesmo gateway.
+- **Solução:**  
+  - **Equipe de campo** deve **verificar energia, internet, alimentação e operação física do gateway** **em até 24h**.
+
+##### Obstrução de sinal LoRa ou falha de rádio/antena
+- **PICs:** 21782, 2243, 23639, 21729, 26306, 12359, 25081, 27232
+- **Sintoma:** comunicação intermitente ou interrompida, com tendência de permanência em Standby ou evolução para Offline.
+- **Solução:**  
+  - **Equipe de campo** deve **inspecionar antenas, conectores e visada de sinal, além de remapear a malha se necessário** **em até 48–72h**.
+
+### 2.3 Outros / Diagnósticos inconclusivos
+- Listar aqui PICs com dados insuficientes (sem histórico, poucas leituras de solar/bateria).
+
+#### Poucos dados solares recentes
+- **PICs:** 843, 3294, 4745, 9074, 16417, 22639, 23639, 25081, 26745
+- **Causa:** poucas amostras para conclusão do diagnóstico solar.
+- **Solução:**  
+  - **Suporte/monitoramento** deve **acompanhar novas leituras e reavaliar o diagnóstico** **nas próximas 24–48h**.
+
+#### Poucos dados de bateria
+- **PICs:** 3294, 4745, 16417, 22639, 843, 23639, 25081, 26745, 9074
+- **Causa:** histórico insuficiente para concluir a saúde da bateria.
+- **Solução:**  
+  - **Suporte/monitoramento** deve **validar recebimento de telemetria e repetir análise após novo ciclo de dados** **em 24–48h**.
+
+## 3. Links
+- **Dashboard Grafana (filtro automático pelos PICs afetados):**  
+  [Dashboard Grafana](https://grafana.zeusagro.com/d/cdx363gwydibka/pics-overview?orgId=1&from=now-7d&to=now&timezone=browser&var-data_source=c60cbd8c-582e-4d7d-9781-7022bb41448e&var-client_situation=$__all&var-client_name=$__all&var-client=$__all&var-visible=Sim&var-test_mode=Nao&var-hardware_version=$__all&var-code_version=$__all&var-communication_type=$__all&var-type=$__all&var-pic_name=$__all&var-delay_min=0%20hours&var-delay_max=5%20year&var-has_wind_sensor=All&var-has_solar_sensor=All&var-gtw=$__all&&var-equipe04=$__all&var-equipe02=$__all&var-sem_pic=$__all&var-equipe03=$__all&var-equipe=$__all&var-nearby_pic=7&var-radius=2&var-data_source_mysql=ae788b24-f07f-4c9b-95b9-5f3b1863d338&var-pic=843&var-pic=937&var-pic=967&var-pic=1811&var-pic=2243&var-pic=2974&var-pic=3294&var-pic=3468&var-pic=4648&var-pic=4716&var-pic=4745&var-pic=4763&var-pic=4927&var-pic=7597&var-pic=8188&var-pic=8589&var-pic=9073&var-pic=9074&var-pic=10718&var-pic=10720&var-pic=11539&var-pic=12359&var-pic=13768&var-pic=13793&var-pic=14934&var-pic=15011&var-pic=16205&var-pic=16250&var-pic=16403&var-pic=16417&var-pic=17748&var-pic=21729&var-pic=21731&var-pic=21782&var-pic=21821&var-pic=22478&var-pic=22639&var-pic=23142&var-pic=23402&var-pic=23453&var-pic=23603&var-pic=23639&var-pic=23655&var-pic=23669&var-pic=25081&var-pic=25099&var-pic=25155&var-pic=25352&var-pic=25664&var-pic=26038&var-pic=26116&var-pic=26133&var-pic=26147&var-pic=26159&var-pic=26216&var-pic=26231&var-pic=26236&var-pic=26306&var-pic=26452&var-pic=26575&var-pic=26745&var-pic=27171&var-pic=27172&var-pic=27205&var-pic=27232)[0m./run.sh, linha 44: 268520 Morto                   python main.py

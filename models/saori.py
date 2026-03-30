@@ -1,8 +1,8 @@
 import datetime as dt
-import os
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
+
+from llm import LLM
 
 from .model import Model
 from .diagnostic_lite import DiagnosticLiteModel
@@ -18,11 +18,7 @@ class SaoriModel(Model):
     verbose = True
     return_intermediate_steps = True
 
-    llm = ChatOpenAI(
-        model_name="gpt-5-mini",
-        temperature=0.2,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-    )
+    llm = LLM("gpt-5-mini", temperature=0.2)
 
     agents = [DiagnosticLiteModel]
 

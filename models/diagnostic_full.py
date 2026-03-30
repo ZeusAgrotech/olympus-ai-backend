@@ -1,11 +1,11 @@
 import concurrent.futures
 import datetime as dt
-import os
 from typing import List, Optional
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+
+from llm import LLM
 
 from services.mcp_diagnosis import MCPDiagnosisService
 from tools.dates import normalize_reference_date as _normalize_reference_date
@@ -23,14 +23,7 @@ class DiagnosticFullModel(Model):
     verbose = True
     return_intermediate_steps = True
 
-    llm = ChatOpenAI(
-        #model_name="gpt-5-mini",
-        #model_name="gpt-5.2",
-        #model_name="gpt-5.1",
-        model_name="gpt-5.4",
-        temperature=0.1,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-    )
+    llm = LLM("gpt-5.4", temperature=0.1)
 
     agents = []
 

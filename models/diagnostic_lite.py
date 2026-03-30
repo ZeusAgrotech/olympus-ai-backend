@@ -1,8 +1,8 @@
 import datetime as dt
-import os
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
+
+from llm import LLM
 
 from .diagnostic_full import DiagnosticFullModel
 from .model import Model
@@ -15,11 +15,7 @@ class DiagnosticLiteModel(Model):
     verbose = True
     return_intermediate_steps = True
 
-    llm = ChatOpenAI(
-        model_name="gpt-5-mini",
-        temperature=0.1,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-    )
+    llm = LLM("gpt-5-mini", temperature=0.1)
 
     tools = [
         DiagnosticFullModel.get_park_overview,
