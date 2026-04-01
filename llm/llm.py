@@ -2,16 +2,16 @@
 Classe base para definição declarativa de LLMs na plataforma Olympus AI.
 
 Cada subclasse representa um modelo disponível. O simples ato de criá-la
-a registra automaticamente no REGISTRY global e, se passthrough=True e
-hide=False, também a expõe como endpoint direto no servidor.
+a registra automaticamente no REGISTRY global e, se passthrough=True,
+também a expõe como endpoint direto no servidor.
 
 Uso:
     class Gpt54LLM(BaseLLM):
         model_name  = "gpt-5.4"
         provider    = "openai"
         env_key     = "OPENAI_API_KEY"
-        passthrough = True   # expõe como endpoint /v1/chat/completions
-        hide        = False  # visível via passthrough (True = só uso interno)
+        passthrough = True   # True → endpoint /v1/chat/completions
+                             # False → só uso interno (LangChain agents)
 """
 
 import os
@@ -79,8 +79,7 @@ class BaseLLM:
     model_name: str = ""
     provider: str = ""
     env_key: str = ""
-    passthrough: bool = False
-    hide: bool = False
+    passthrough: bool = False  # True → endpoint direto | False → só uso interno
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -147,6 +146,8 @@ class PassthroughProxy:
         self.owned_by: str = "zeus"
         self.created: int = int(time.time())
         self.model = self  # self-ref para Server._resolve_model_token_counter
+
+        self.passthrough = True
 
         api_key = os.getenv(llm_cls.env_key) or ""
         self._adapter = build_adapter(

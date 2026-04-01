@@ -53,7 +53,7 @@ from server.server import Server as _Server
 _server = _Server.get_instance()
 
 for _model_name, _cls in REGISTRY.items():
-    if not _cls.passthrough or _cls.hide:
+    if not _cls.passthrough:
         continue
     try:
         _server.register_chat_agent(PassthroughProxy(_cls))

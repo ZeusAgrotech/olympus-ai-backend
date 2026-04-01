@@ -6,4 +6,3 @@ class Gpt54NanoLLM(BaseLLM):
     provider = "openai"
     env_key = "OPENAI_API_KEY"
     passthrough = True
-    hide = False
