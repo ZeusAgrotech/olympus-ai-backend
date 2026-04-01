@@ -148,6 +148,7 @@ class PassthroughProxy:
         self.model = self  # self-ref para Server._resolve_model_token_counter
 
         self.passthrough = True
+        self.provider = llm_cls.provider
 
         api_key = os.getenv(llm_cls.env_key) or ""
         self._adapter = build_adapter(

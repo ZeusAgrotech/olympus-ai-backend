@@ -509,7 +509,7 @@ class Server:
                         "id": model_id,
                         "object": "model",
                         "created": meta["created"],
-                        "owned_by": meta["owned_by"],
+                        "provider": meta["provider"],
                     }
                 )
 
@@ -557,6 +557,7 @@ class Server:
             "aliases": normalized_aliases,
             "hidden": bool(getattr(agent, "hidden", False)),
             "passthrough": bool(getattr(agent, "passthrough", False)),
+            "provider": getattr(agent, "provider", None),
         }
 
     def start(self, host="0.0.0.0", port=5000, debug=True):
