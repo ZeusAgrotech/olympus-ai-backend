@@ -10,12 +10,17 @@ langchain-ollama
 langchain-google-genai
 langchain-xai
 
-# ---- RAG (obrigatorio para backend atual com Weaviate) ----
+# ---- RAG (backends) ----
 langchain-weaviate
 langchain-text-splitters
+weaviate-client
+ragie
+
+# ---- Web Search ----
+tavily-python
+flashrank
 
 # ---- Dependencias de runtime ----
-weaviate-client
 tiktoken
 
 # ---- Ferramentas de dados usadas ----

@@ -8,6 +8,7 @@ _SECRET_ENV_NAMES = (
     "TAVILY_API_KEY",
     "MCP_DIAGNOSIS_AUTH_TOKEN",
     "AUTH_API_KEY",
+    "RAGIE_API_KEY",
 )
 
 

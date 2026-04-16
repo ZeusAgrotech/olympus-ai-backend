@@ -1,217 +1,390 @@
-# Diagnóstico de PICs
+# Olympus AI Backend
 
-Este repositório contém um servidor Flask compatível com endpoints OpenAI e agentes declarativos para diagnóstico de PICs instalados no parque.
+Backend de agentes de IA com API compatível com OpenAI. Cada agente combina LLM + ferramentas (RAG, busca web, microserviços) e é exposto como endpoint HTTP.
 
-O objetivo principal do sistema é identificar e classificar problemas operacionais, como falhas de rede, problemas de hardware ou configurações incorretas, permitindo uma resposta rápida e manutenção assertiva.
+---
 
-## Instalação e Execução
+## Índice
 
-### Instalação
+- [Visão Geral](#visão-geral)
+- [Arquitetura](#arquitetura)
+- [Mapa de Dependências](#mapa-de-dependências)
+- [Camadas do Sistema](#camadas-do-sistema)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Execução](#execução)
+- [API Reference](#api-reference)
+- [Auto-Discovery](#auto-discovery)
+- [Guia Rápido: Novos Componentes](#guia-rápido-novos-componentes)
+- [Estrutura de Diretórios](#estrutura-de-diretórios)
 
-O sistema pode ser executado em modo local ou via Docker:
+---
 
-```bash
-# Modo local (cria ambiente virtual e instala dependências)
-./install.sh --local
+## Visão Geral
 
-# Modo Docker (constrói a imagem Docker)
-./install.sh --docker
+O sistema é uma plataforma de agentes conversacionais especializados em diagnóstico de PICs (dispositivos IoT em parques). Um cliente HTTP envia mensagens no formato OpenAI e recebe respostas de agentes que raciocinam via LangChain, chamam ferramentas (MCP Diagnosis Service, busca semântica, web) e devolvem a resposta final.
+
+**Agentes disponíveis:**
+
+| Agente | LLM | Uso |
+|--------|-----|-----|
+| `Athena` | GPT-5.4 | Análises complexas, diagnósticos detalhados |
+| `Saori` | GPT-5-mini | Respostas rápidas, tarefas simples |
+| `OneDrive` | GPT-5-mini | Busca em documentos corporativos |
+
+---
+
+## Arquitetura
+
+```mermaid
+flowchart TD
+    CLIENT["HTTP Client\n(OpenAI-compatível, Postman, etc.)"]
+    SERVER["server/server.py — Flask Singleton\nAuth Bearer · SSE Streaming · Token counting\nRoteamento por model name · Formato OpenAI"]
+    AGENTS["agents/ — Camada de Apresentação\nAthenaAgent · SaoriAgent · OneDriveAgent\nAuto-registro via __init_subclass__"]
+    MODELS["models/ — Orquestração LangChain\nAthenaModel · SaoriModel · DiagnosticFullModel\nAgentExecutor · invoke() · stream()"]
+    LLM["llm/\nBaseLLM.build()\n→ LangChain ChatModel"]
+    STORES["stores/ + rag/ + search/\nLibrary · Memory · Research · OneDrive\nWeaviateRAG · RagieRAG · TavilySearch\n→ StructuredTool via as_tool()"]
+    SERVICES["services/\nMCPDiagnosisService\n(cliente HTTP para MCP)"]
+
+    CLIENT -->|"POST /v1/chat/completions"| SERVER
+    SERVER -->|"agent.chat() / agent.chat_stream()"| AGENTS
+    AGENTS -->|"model.invoke() / model.stream()"| MODELS
+    MODELS --> LLM
+    MODELS --> STORES
+    STORES --> SERVICES
 ```
 
-### Execução
+### Fluxo de Execução Típico
 
-```bash
-# Modo local (ativa venv e executa main.py)
-./run.sh --local
+1. `POST /v1/chat/completions` chega com `Authorization: Bearer sk_xxx`
+2. `Server` valida auth, extrai `model` e `messages`
+3. Roteia para o `Agent` registrado com aquele nome
+4. `Agent.chat()` → `Model.invoke()` → `AgentExecutor.invoke()`
+5. O `AgentExecutor` decide quais tools chamar (RAG, MCP Service, etc.)
+6. Consolida resposta e retorna no formato OpenAI
 
-# Modo Docker (inicia container em background)
-./run.sh --docker
+---
+
+## Mapa de Dependências
+
+### Hierarquia de Herança
+
+```mermaid
+classDiagram
+    class Agent
+    class Model
+    class BaseLLM
+    class RAG
+    class WebSearch
+    class Embedding
+
+    Agent <|-- AthenaAgent
+    Agent <|-- SaoriAgent
+    Agent <|-- OneDriveAgent
+
+    Model <|-- AthenaModel
+    Model <|-- SaoriModel
+    Model <|-- DiagnosticFullModel
+    Model <|-- DiagnosticLiteModel
+    Model <|-- OneDriveModel
+
+    BaseLLM <|-- Gpt54LLM
+    BaseLLM <|-- Gpt5MiniLLM
+    BaseLLM <|-- Gpt54MiniLLM
+    BaseLLM <|-- Gpt54NanoLLM
+
+    RAG <|-- WeaviateRAG
+    RAG <|-- RagieRAG
+    WeaviateRAG <|-- Library
+    WeaviateRAG <|-- Memory
+    WeaviateRAG <|-- _ResearchStore
+    RagieRAG <|-- OneDrive
+
+    WebSearch <|-- TavilySearch
+    TavilySearch <|-- Research
+
+    Embedding <|-- OpenAIEmbedding
+
+    AthenaAgent --> AthenaModel : usa
+    SaoriAgent --> SaoriModel : usa
+    OneDriveAgent --> OneDriveModel : usa
+
+    AthenaModel --> DiagnosticFullModel : agents filho
+    SaoriModel --> DiagnosticLiteModel : agents filho
+    OneDriveModel --> OneDrive : tool
 ```
 
-### Parar o Servidor
+### Quem depende de quem
 
-```bash
-# Para processo local na porta 6001
-./stop.sh --local
+```mermaid
+flowchart TD
+    MAIN["main.py / wsgi.py"]
+    AGENTS_PKG["import agents"]
+    AGENT_INIT["Agent.__init__()"]
+    SERVER_REG["Server.register_chat_agent()"]
+    MODEL_RESOLVE["Agent._resolve_model()"]
+    MODEL_INIT["XxxModel.__init__()"]
+    LLM_BUILD["BaseLLM.build() → LangChain ChatModel"]
+    RAG_TOOL["Store/RAG.as_tool() → StructuredTool"]
 
-# Para container Docker
-./stop.sh --docker
+    MAIN --> AGENTS_PKG
+    AGENTS_PKG --> AGENT_INIT
+    AGENT_INIT --> SERVER_REG
+    AGENT_INIT --> MODEL_RESOLVE
+    MODEL_RESOLVE --> MODEL_INIT
+    MODEL_INIT --> LLM_BUILD
+    MODEL_INIT --> RAG_TOOL
+
+    NOTE1["server/ — depende só de auth/ e tools/"]
+    NOTE2["auth/ — SQLite puro, sem deps de domínio"]
+    NOTE3["tools/ — utilitários puros, sem deps entre si"]
 ```
 
-### Desinstalação
+---
 
-O script de desinstalação remove recursos do sistema e pergunta interativamente se deseja deletar o banco de autenticação:
+## Camadas do Sistema
 
-```bash
-# Desinstala ambiente local
-./uninstall.sh --local
-# ⚠️ Pergunta: "Do you want to delete the authentication database (auth/auth.db)? [y/N]"
+| Camada | Pasta | Responsabilidade |
+|--------|-------|-----------------|
+| HTTP / API | `server/` | Flask, auth, roteamento, SSE, formato OpenAI |
+| Apresentação | `agents/` | Interface declarativa; auto-registro no servidor |
+| Orquestração | `models/` | LangChain AgentExecutor; tools; invoke/stream |
+| LLM | `llm/` | Declaração de modelos; REGISTRY; PassthroughProxy; Adapters |
+| RAG | `rag/` + `stores/` | Busca semântica (Weaviate, Ragie); stores concretos |
+| Busca Web | `search/` + `stores/` | Tavily; cache em Weaviate |
+| Embeddings | `embeddings/` | OpenAI embeddings com lazy init |
+| Serviços | `services/` | Clientes HTTP para microserviços externos |
+| Auth | `auth/` | API keys; SQLite; CLI |
+| Utilitários | `tools/` | Parsing, datas, mensagens, TOON, env |
 
-# Remove recursos Docker
-./uninstall.sh --docker
-# ⚠️ Pergunta: "Do you want to delete the authentication database (auth/auth.db)? [y/N]"
-```
+---
 
-**Nota:** O banco de dados de autenticação (`auth/auth.db`) contém as chaves de API cadastradas. Se deletado, todas as chaves serão perdidas permanentemente.
+## Variáveis de Ambiente
 
-## Endpoints Principais
+Copie `.env.example` → `.env`:
 
-O servidor expõe os seguintes endpoints HTTP:
+| Variável | Obrigatória | Descrição |
+|----------|-------------|-----------|
+| `OPENAI_API_KEY` | **Sim** | Chat + embeddings OpenAI |
+| `TAVILY_API_KEY` | Não | Busca web (`Research` store) |
+| `RAGIE_API_KEY` | Não | RAG gerenciado (`OneDrive` store) |
+| `MCP_DIAGNOSIS_BASE_URL` | Não | URL do microserviço MCP Diagnosis |
+| `MCP_DIAGNOSIS_AUTH_TOKEN` | Não | Token Bearer do microserviço MCP |
+| `MCP_DIAGNOSIS_TIMEOUT_SECONDS` | Não | Timeout MCP (padrão: 300) |
+| `AUTH_API_KEY` | Prod | Keys de produção, separadas por vírgula (Cloud Run) |
+| `GOOGLE_API_KEY` | Não | Google Gemini |
+| `ANTHROPIC_API_KEY` | Não | Anthropic Claude |
+| `PORT` | Não | Porta do servidor (padrão: 6001) |
+| `ENVIRONMENT` | Não | `development` ou `production` |
 
-- `GET /health` - Health check do serviço
-- `GET /models` e `GET /v1/models` - Listagem de modelos registrados
-- `POST /chat/completions` e `POST /v1/chat/completions` - Chat completions compatível com OpenAI
+---
 
-### Autenticação
+## Execução
 
-- Rotas públicas: `/health`, `/models` e `/v1/models`
-- Demais rotas exigem header `Authorization: Bearer <API_KEY>`
-
-## Gerenciamento de Chaves de API
-
-O sistema utiliza autenticação por chaves de API. Use o script `keys.sh` para gerenciar as chaves:
-
-### Criar Chave
-
-```bash
-# Criar chave sem data de expiração
-./keys.sh create "Nome do Cliente"
-./keys.sh -c "Nome do Cliente"              # Forma abreviada
-
-# Criar chave com data de expiração
-./keys.sh create "Cliente" "2024-12-31"
-./keys.sh -c "Cliente" "2024-12-31"         # Forma abreviada
-```
-
-### Listar Chaves
+### Desenvolvimento local
 
 ```bash
-./keys.sh list
-./keys.sh -ls                                # Forma abreviada
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # preencha as variáveis
+python main.py
 ```
 
-### Deletar Chave Específica
+### Docker Compose
 
 ```bash
-./keys.sh delete 5                           # Deleta chave com ID 5
-./keys.sh -rm 5                              # Forma abreviada
+docker compose up --build
+# Servidor em http://localhost:6001
 ```
 
-### Deletar Todas as Chaves
+### Produção (gunicorn / Cloud Run)
 
 ```bash
-./keys.sh delete-all
-./keys.sh -rma                               # Forma abreviada
-# ⚠️ Requer confirmação: digite 'DELETAR TUDO'
+gunicorn wsgi:app --workers 2 --threads 4 --bind 0.0.0.0:8080
 ```
 
-### Modo Docker
+Ver [`docs/olympus-ai-backend/DEPLOY_GCP.md`](docs/olympus-ai-backend/DEPLOY_GCP.md) para deploy no GCP.
 
-Para gerenciar chaves dentro do container Docker:
+### Gerenciar API Keys
 
 ```bash
-./keys.sh --docker list
-./keys.sh -D -ls                             # Forma abreviada
+python auth/manage_keys.py create "nome-do-cliente" 2025-12-31
+python auth/manage_keys.py list
+python auth/manage_keys.py delete <id>
 ```
 
-### Resumo de Comandos
+---
 
-| Comando | Abreviação | Descrição |
-|---------|------------|-----------|
-| `create` | `-c` | Criar nova chave |
-| `list` | `-ls` | Listar todas as chaves |
-| `delete` | `-rm` | Deletar chave por ID |
-| `delete-all` | `-rma` | Deletar todas as chaves |
+## API Reference
 
-**Flags de modo:**
-- `-l`, `--local` - Executa localmente (padrão)
-- `-D`, `--docker` - Executa no container Docker
+### Endpoints Públicos (sem auth)
 
-## Estrutura de Autenticação
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/health` | Health check |
+| `GET` | `/v1/models` | Lista agentes registrados |
+| `GET` | `/models` | Idem (alias) |
+| `GET` | `/passthrough` | Lista modelos passthrough (acesso direto ao provider) |
 
-Os arquivos relacionados à autenticação estão organizados no diretório `auth/`:
+### Chat Completions (requer Bearer token)
 
-- `auth/auth.db` - Banco SQLite com as chaves de API cadastradas
-- `auth/manage_keys.py` - Script Python para gerenciamento de chaves
-- [📄 Ver documentação da camada Auth](auth/README.md)
+```http
+POST /v1/chat/completions
+Authorization: Bearer sk_xxxxx
+Content-Type: application/json
+```
 
-## Agentes Disponíveis
+**Request:**
+```json
+{
+  "model": "Athena",
+  "messages": [
+    { "role": "system", "content": "Contexto opcional" },
+    { "role": "user",   "content": "Analise o parque X" }
+  ],
+  "stream": false,
+  "temperature": 0.2,
+  "thought_stream_mode": "content"
+}
+```
 
-| Agente | Modelo | Uso Recomendado |
-|---|---|---|
-| `athena` | GPT-5.4 | Análises complexas, diagnósticos detalhados, planejamento estratégico |
-| `saori` | GPT-5-mini | Tarefas simples, respostas rápidas, uso cotidiano |
+**Parâmetros suportados:** `temperature`, `top_p`, `max_tokens`, `frequency_penalty`, `presence_penalty`, `stop`, `seed`
 
-Especifique o agente desejado no campo `model` da requisição. Se omitido, o servidor usa o agente padrão.
+**Parâmetro exclusivo `thought_stream_mode`:**
 
-## Arquitetura do Sistema
+| Valor | Comportamento |
+|-------|---------------|
+| `content` (padrão) | Pensamentos embutidos como `<think>...</think>` no conteúdo |
+| `custom` | Pensamentos em campo `"reasoning"` separado no delta de stream |
+| `hidden` | Pensamentos suprimidos |
 
-O projeto segue uma arquitetura em camadas bem definida para separar responsabilidades, facilitar a manutenção e garantir a escalabilidade.
+**Resposta não-streaming:**
+```json
+{
+  "id": "chatcmpl-uuid",
+  "object": "chat.completion",
+  "model": "Athena",
+  "choices": [{ "message": { "role": "assistant", "content": "..." }, "finish_reason": "stop" }],
+  "usage": { "prompt_tokens": 100, "completion_tokens": 200, "total_tokens": 300 },
+  "thought": "Passo 1\nAcao: DiagnosticFull\nObservacao: ..."
+}
+```
 
-### Camadas
+**Resposta streaming (SSE):**
+```
+data: {"id":"...","object":"chat.completion.chunk","choices":[{"delta":{"content":"..."},"finish_reason":null}]}
+data: {"id":"...","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+data: [DONE]
+```
 
-1.  **Agents (Camada de Apresentação / Rotas)**
-    *   **Localização:** [`agents/`](agents/README.md)
-    *   **Responsabilidade:** Atuam como pontos de entrada declarativos. Cada arquivo define um agente com metadados, aliases e modelo associado.
-    *   **Função:** Conectam as requisições HTTP ao comportamento de chat e, quando aplicável, às rotas de ferramenta.
-    *   [📄 Ver documentação e template da camada Agents](agents/README.md)
+---
 
-2.  **Services (Camada de Regra de Negócio)**
-    *   **Localização:** [`services/`](services/README.md)
-    *   **Responsabilidade:** Encapsular integrações e regras de negócio de diagnóstico.
-    *   **Função:** Consumir serviços externos e retornar dados estruturados para os modelos/agentes.
-    *   [📄 Ver documentação e template da camada Services](services/README.md)
+## Auto-Discovery
 
-3.  **Models (Camada de Modelo e Orquestração LLM)**
-    *   **Localização:** [`models/`](models/README.md)
-    *   **Responsabilidade:** Definir comportamento dos modelos de chat, prompts e tools.
-    *   **Função:** Orquestrar execução via LangChain, com suporte a pensamento intermediário e contagem de tokens.
-    *   [📄 Ver documentação e template da camada Models](models/README.md)
+O sistema usa metaclasses para auto-registro sem configuração manual:
 
-4.  **RAG (Recuperação de Conhecimento)**
-    *   **Localização:** [`rag/`](rag/README.md)
-    *   **Responsabilidade:** Fornecer coleções vetoriais e busca semântica (Weaviate), incluindo suporte a pesquisa web.
-    *   **Função:** Indexar e recuperar contexto para enriquecer respostas dos modelos.
-    *   [📄 Ver documentação e template da camada RAG](rag/README.md)
+```mermaid
+sequenceDiagram
+    participant main as main.py
+    participant pkg as agents/__init__.py
+    participant cls as class AthenaAgent(Agent)
+    participant agent as Agent.__init_subclass__
+    participant init as Agent.__init__()
+    participant server as Server
 
-5.  **Server (Camada HTTP e Contrato OpenAI)**
-    *   **Localização:** [`server/`](server/README.md)
-    *   **Responsabilidade:** Disponibilizar endpoints HTTP, autenticação e stream SSE.
-    *   **Função:** Resolver modelo de chat, rotear chamadas e montar payloads OpenAI-compatíveis.
-    *   [📄 Ver documentação e template da camada Server](server/README.md)
+    main->>pkg: import agents
+    pkg->>cls: import agents.athena
+    cls->>agent: define subclass (automático)
+    agent->>init: cls()
+    init->>init: _resolve_model() → AthenaModel()
+    init->>server: register_chat_agent(self)
+```
 
-6.  **Auth (Autenticação e Chaves)**
-    *   **Localização:** [`auth/`](auth/README.md)
-    *   **Responsabilidade:** Persistência e validação de chaves de API.
-    *   **Função:** Criar/listar/remover chaves e validar acesso Bearer nas requisições.
-    *   [📄 Ver documentação e template da camada Auth](auth/README.md)
+### Regras obrigatórias de nomenclatura
 
-7.  **Tools (Utilitários)**
-    *   **Localização:** [`tools/`](tools/README.md)
-    *   **Responsabilidade:** Scripts e funções auxiliares de uso geral.
-    *   [📄 Ver documentação e template da camada Tools](tools/README.md)
+| Classe base | Sufixo obrigatório | Exemplo |
+|-------------|-------------------|---------|
+| `Agent` | `Agent` | `MeuNovoAgent` |
+| `Model` | `Model` | `MeuNovoModel` |
+| `BaseLLM` | — | atributos `model_name`, `provider`, `env_key` obrigatórios |
 
-8.  **Docs**
-    *   **Localização:** [`docs/`](docs/README.md)
-    *   **Conteúdo:** Documentação auxiliar, coleção do Postman e guias de uso.
-    *   [📄 Ver documentação da pasta Docs](docs/README.md)
-    *   [📄 Collection do Postman](docs/postman.json)
+### LLMs e Passthrough
 
-## Fluxo de Execução Típico
+Cada `BaseLLM` com `passthrough=True` e `hide=False` é automaticamente registrado como `PassthroughProxy` no servidor. Esses agentes são invisíveis no `GET /v1/models` mas acessíveis via `POST /v1/chat/completions`.
 
-1.  Uma requisição chega em `POST /v1/chat/completions` com `Authorization: Bearer <API_KEY>`.
-2.  O `server/server.py` valida autenticação, mensagem e modelo solicitado.
-3.  O agente correspondente (camada `agents/`) encaminha a chamada para seu modelo (`models/`).
-4.  O modelo pode acionar tools internas, serviços externos (`services/`) e/ou busca semântica (`rag/`).
-5.  O servidor retorna resposta no formato OpenAI (`chat.completion` ou stream SSE).
+---
 
-## Documentação por Pasta
+## Guia Rápido: Novos Componentes
 
-- [📄 Agents](agents/README.md)
-- [📄 Auth](auth/README.md)
-- [📄 Models](models/README.md)
-- [📄 RAG](rag/README.md)
-- [📄 Server](server/README.md)
-- [📄 Services](services/README.md)
-- [📄 Tools](tools/README.md)
-- [📄 Docs](docs/README.md)
+### 1. Novo LLM
+
+```python
+# llm/meu_modelo.py
+from llm.llm import BaseLLM
+
+class MeuModeloLLM(BaseLLM):
+    model_name  = "gpt-5-turbo"
+    provider    = "openai"         # "openai" | "google" | "anthropic"
+    env_key     = "OPENAI_API_KEY"
+    passthrough = True             # True → expõe endpoint direto
+```
+
+### 2. Novo Store RAG
+
+```python
+# stores/meu_store.py
+from rag.weaviate import WeaviateRAG
+from rag.base import TypeAccess
+from embeddings.openai import OpenAIEmbedding
+
+class MeuStore(WeaviateRAG):
+    name            = "meu_store"
+    description     = "Base de artigos técnicos"
+    collection_name = "ZEUS_MeuStore"
+    embedding       = OpenAIEmbedding("text-embedding-3-small")
+    type_access     = TypeAccess.READ
+```
+
+### 3. Novo Model
+
+Ver [`models/README.md`](models/README.md) — template completo com ferramentas, prompt e configurações.
+
+### 4. Novo Agent
+
+Ver [`agents/README.md`](agents/README.md) — template completo com registro e tool endpoints.
+
+---
+
+## Estrutura de Diretórios
+
+| Pasta | Descrição |
+|-------|-----------|
+| `agents/` | Apresentação: auto-registro e interface HTTP |
+| `auth/` | API keys (SQLite) + CLI de gerenciamento |
+| `docs/` | Deploy GCP, Postman, documentação extra |
+| `embeddings/` | Providers de embeddings |
+| `llm/` | Declaração de LLMs + REGISTRY + Adapters |
+| `llm/adapters/` | Adapters por provider (OpenAI, Google, Anthropic) |
+| `models/` | Orquestração LangChain (AgentExecutor) |
+| `rag/` | Interface RAG + implementações (Weaviate, Ragie) |
+| `search/` | Interface WebSearch + Tavily |
+| `server/` | Flask singleton + rotas OpenAI-compatíveis |
+| `services/` | Clientes HTTP para microserviços externos |
+| `stores/` | Stores concretos (combinam RAG + Search) |
+| `tests/` | Testes pytest |
+| `tools/` | Utilitários puros |
+| `main.py` | Entry point desenvolvimento (Flask debug) |
+| `wsgi.py` | Entry point produção (gunicorn) |
+
+READMEs por pasta:
+
+- [`agents/README.md`](agents/README.md) — como criar agentes
+- [`models/README.md`](models/README.md) — como criar modelos de orquestração
+- [`llm/README.md`](llm/README.md) — como adicionar novos LLMs e adapters
+- [`rag/README.md`](rag/README.md) — interface RAG e backends
+- [`stores/README.md`](stores/README.md) — stores concretos disponíveis
+- [`search/README.md`](search/README.md) — busca web e caching
+- [`embeddings/README.md`](embeddings/README.md) — providers de embedding
+- [`server/README.md`](server/README.md) — servidor Flask e roteamento
+- [`services/README.md`](services/README.md) — clientes de microserviços
+- [`auth/README.md`](auth/README.md) — autenticação e API keys
+- [`tools/README.md`](tools/README.md) — utilitários
