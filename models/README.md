@@ -127,12 +127,16 @@ flowchart TD
     Saori["SaoriModel\ngpt-5-mini · temp=0.2"]
     DiagLite["DiagnosticLiteModel\ngpt-5-mini · temp=0.1\ninvocado como tool 'diagnosis'"]
 
-    OneDriveM["OneDriveModel\ngpt-5-mini · temp=0.1"]
+    OneDriveM["OneDriveModel\ngpt-5-nano · temp=0.1"]
     OneDriveS["OneDrive store\n(Ragie RAG)"]
+
+    WebSearchM["WebSearchModel\ngpt-5-nano · temp=0.1"]
+    WebSearchS["WebSearch store\n(Tavily)"]
 
     Athena -->|agents filho| DiagFull
     Saori -->|agents filho| DiagLite
     OneDriveM -->|tool| OneDriveS
+    WebSearchM -->|tool| WebSearchS
 ```
 
 ### `AthenaModel` (`athena.py`)
@@ -199,6 +203,24 @@ Agente de consulta documental especializado nos arquivos do OneDrive. Segue um p
    - vídeo/áudio → `Xmin Ys` (via `start_time`/`end_time`)
    - outros (`.md`, `.xlsx`, etc.) → `—`
 5. **Nunca** repete o mesmo documento na tabela — agrupa por `document_name`.
+
+### `WebSearchModel` (`web_search.py`)
+
+| Atributo | Valor |
+|----------|-------|
+| LLM | `gpt-5-nano`, temperature=0.1 |
+| `tools` | `[*WebSearch().as_tool()]` → `WebSearch_WebSearch` |
+| `return_intermediate_steps` | `True` |
+| `thought_labels` | `{"WebSearch_WebSearch": "Buscando na web"}` |
+
+Agente de busca na web via Tavily. Segue um protocolo rígido de resposta:
+
+1. **Sempre chama `WebSearch_WebSearch`** antes de formular qualquer resposta.
+2. **Se não encontrar** resultado relevante, responde somente: _"Não foram encontrados resultados relevantes para essa consulta."_
+3. **Se encontrar**, gera uma resposta em markdown com:
+   - Citações inline pelo número da fonte: `[1]`, `[2]`
+   - Seção `## Fontes` ao final com tabela `# | Título | Link`
+4. **Nunca** inventa URLs — se não houver URL no resultado, coloca `—` na coluna Link.
 
 ---
 

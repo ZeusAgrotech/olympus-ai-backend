@@ -54,9 +54,15 @@ classDiagram
         +owned_by = "Zeus"
     }
 
+    class WebSearchAgent {
+        +model = WebSearchModel
+        +owned_by = "Zeus"
+    }
+
     Agent <|-- AthenaAgent
     Agent <|-- SaoriAgent
     Agent <|-- OneDriveAgent
+    Agent <|-- WebSearchAgent
 ```
 
 ### Atributos declarativos
@@ -107,7 +113,8 @@ def __init__(self):
 |--------|---------|-----|-------|-----|
 | `AthenaAgent` | `athena.py` | GPT-5.4 | `AthenaModel` | Análises complexas, diagnósticos detalhados |
 | `SaoriAgent` | `saori.py` | GPT-5-mini | `SaoriModel` | Respostas rápidas, tarefas cotidianas |
-| `OneDriveAgent` | `onedrive.py` | GPT-5-mini | `OneDriveModel` | Busca em documentos corporativos |
+| `OneDriveAgent` | `onedrive.py` | GPT-5-nano | `OneDriveModel` | Busca em documentos corporativos |
+| `WebSearchAgent` | `web_search.py` | GPT-5-nano | `WebSearchModel` | Busca de informações na web via Tavily |
 
 ---
 

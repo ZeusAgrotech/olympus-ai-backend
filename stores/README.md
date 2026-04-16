@@ -36,8 +36,13 @@ classDiagram
     }
 
     class OneDrive {
-        +partition = "test"
+        +partition = "zeus-library"
         +type_access = READ
+    }
+
+    class WebSearch {
+        +tavily_api_key = env TAVILY_API_KEY
+        +max_web_results = 5
     }
 
     WeaviateRAG <|-- Library
@@ -45,6 +50,7 @@ classDiagram
     WeaviateRAG <|-- _ResearchStore
     RagieRAG <|-- OneDrive
     TavilySearch <|-- Research
+    TavilySearch <|-- WebSearch
     Research --> _ResearchStore : storage/cache
 ```
 
@@ -140,6 +146,34 @@ O metadata retornado inclui `document_name`, `source_url`, `file_path`, `folder`
 
 ---
 
+### `WebSearch` (`web_search.py`)
+
+| Atributo | Valor |
+|----------|-------|
+| Backend | Tavily API |
+| `max_web_results` | 5 |
+| `storage` | Nenhum (sem cache) |
+| `type_access` | — (busca web pura) |
+
+Busca web direta via Tavily, sem cache persistente. O método `.as_tool()` expõe **uma ferramenta**:
+
+| Tool gerada | Descrição |
+|-------------|-----------|
+| `WebSearch_WebSearch` | Busca na web e retorna resultados com título, URL e conteúdo |
+
+```python
+# Em um Model:
+tools = [*WebSearch().as_tool()]  # desempacota a tool WebSearch_WebSearch
+
+thought_labels = {
+    "WebSearch_WebSearch": "Buscando na web",
+}
+```
+
+> **Diferença em relação a `Research`:** `WebSearch` não possui `storage`, portanto não armazena resultados em cache. Use `Research` quando quiser persistir resultados para evitar chamadas repetidas à API do Tavily.
+
+---
+
 ## Dependências por Store
 
 | Store | Infraestrutura | Variáveis necessárias |
@@ -148,6 +182,7 @@ O metadata retornado inclui `document_name`, `source_url`, `file_path`, `folder`
 | `Memory` | Weaviate em `localhost:8080` | `OPENAI_API_KEY` |
 | `Research` | Weaviate em `localhost:8080` + Tavily | `OPENAI_API_KEY`, `TAVILY_API_KEY` |
 | `OneDrive` | Ragie SaaS | `RAGIE_API_KEY` |
+| `WebSearch` | Tavily API | `TAVILY_API_KEY` |
 
 ---
 
