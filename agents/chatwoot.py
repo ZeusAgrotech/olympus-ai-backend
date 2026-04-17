@@ -18,13 +18,22 @@ class ChatwootAgent(Agent):
     hidden = True
 
     def _inject_event(self, request_data: dict) -> dict:
-        """Prepend a instrução do event_name ao input do modelo."""
+        """
+        Se a última mensagem for uma pergunta real do usuário, passa direto.
+        Se for apenas o dump de contexto do Chatwoot, injeta a instrução do event_name.
+        """
         request_data = dict(request_data or {})
+        last_msg = (request_data.get("_last_user_message") or "").strip()
+
+        # Mensagem real do usuário → responde direto, ignora event_name
+        if last_msg and not last_msg.startswith("Conversation ID:"):
+            return request_data
+
+        # Dump de contexto → usa event_name para determinar o que fazer
         event_name = (request_data.get("event_name") or "").strip().lower()
         instruction = _EVENT_INSTRUCTIONS.get(event_name, "")
         if instruction:
-            existing = request_data.get("_last_user_message") or ""
-            request_data["_last_user_message"] = f"{instruction}\n\n{existing}".strip()
+            request_data["_last_user_message"] = f"{instruction}\n\n{last_msg}".strip()
         return request_data
 
     def chat(self, messages, model, request_data=None):
