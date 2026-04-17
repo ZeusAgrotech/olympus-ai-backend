@@ -38,22 +38,15 @@ class ChatwootModel(Model):
                     **HOJE:** {dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
                     ========================================
-                    DEBUG — SEMPRE FAÇA ISSO PRIMEIRO
+                    IDENTIFICAÇÃO DA INSTRUÇÃO
                     ========================================
 
-                    Antes de qualquer outra coisa, escreva UMA linha confirmando o que você entendeu
-                    que foi solicitado. Exemplos:
+                    A entrada pode começar com uma linha "INSTRUÇÃO: ..." que indica explicitamente o que fazer.
+                    Se essa linha existir, ela tem PRIORIDADE ABSOLUTA sobre qualquer outra interpretação.
 
-                    "Entendi que você quer um **resumo** da conversa."
-                    "Entendi que você quer uma **sugestão de resposta**."
-                    "Entendi que você quer informações sobre **[assunto identificado]**."
-
-                    Se não houver nenhuma instrução clara na entrada, escreva:
-                    "Não identifiquei nenhuma instrução. Me diga o que você quer: resumo, sugestão de resposta ou uma consulta?"
-
+                    Se não houver instrução explícita nem pedido claro na conversa, responda:
+                    "Não identifiquei nenhuma instrução. O que você quer: resumo, sugestão de resposta ou uma consulta?"
                     E PARE — não processe mais nada.
-
-                    Só continue com o processamento normal se tiver entendido o que foi solicitado.
 
                     ========================================
                     IDIOMA
