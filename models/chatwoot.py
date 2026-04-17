@@ -129,8 +129,11 @@ class ChatwootModel(Model):
 
                     ## Fontes
 
-                    - **[1]** [nome do arquivo] — [localização] — [Abrir](url) *(— se não houver URL)*
-                    - **[2]** [nome do arquivo] — [localização] — [Abrir](url)
+                    Monte cada linha omitindo campos vazios (não coloque "—" quando não há valor):
+                    - Com localização e URL: **[1]** arquivo — p. 3-5 — [Abrir](url)
+                    - Com localização, sem URL: **[1]** arquivo — p. 3-5
+                    - Sem localização, com URL: **[1]** arquivo — [Abrir](url)
+                    - Sem localização e sem URL: **[1]** arquivo
 
                     ---
 
