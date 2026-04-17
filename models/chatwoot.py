@@ -66,25 +66,26 @@ class ChatwootModel(Model):
 
                     NÃO consulte o OneDrive para resumos.
 
-                    PASSO 1 — RESUMIR
+                    PASSO 1 — AVALIAR O TAMANHO DO CONTEXTO
+                    Se a conversa tiver menos de 3 trocas (menos de ~6 mensagens no total) ou for muito curta
+                    para revelar padrão emocional, produza apenas o resumo e encerre com:
+
+                    "── Sentimentos ──
+                    Contexto muito pequeno para classificar."
+
+                    PASSO 2 — RESUMIR (contexto suficiente)
                     Produza um resumo objetivo da conversa ou texto fornecido.
                     Destaque os pontos principais: o problema do cliente, o que foi discutido e o status atual.
 
-                    PASSO 2 — ANÁLISE DE SENTIMENTOS
-                    Após o resumo, adicione obrigatoriamente a seção abaixo:
+                    PASSO 3 — ANÁLISE DE SENTIMENTOS (contexto suficiente)
+                    Logo após o resumo, adicione a seção abaixo (sem tabela — use o formato textual exato):
 
-                    ---
-
-                    ## Análise de Sentimentos do Cliente
-
-                    | Aspecto | Avaliação |
-                    |---------|-----------|
-                    | Sentimento predominante | [Positivo / Neutro / Negativo / Frustrado / Ansioso / Satisfeito] |
-                    | Intensidade | [Baixa / Média / Alta] |
-                    | Evolução ao longo da conversa | [Melhorou / Estável / Piorou / N/A] |
-                    | Risco de churn / escalada | [Baixo / Médio / Alto] |
-
-                    **Observação:** [1-2 frases sobre o estado emocional do cliente e o que pode influenciá-lo]
+                    ── Sentimentos ──
+                    • Sentimento: [Positivo / Neutro / Negativo / Frustrado / Ansioso / Satisfeito]
+                    • Intensidade: [Baixa / Média / Alta]
+                    • Evolução: [Melhorou / Estável / Piorou]
+                    • Risco de escalada: [Baixo / Médio / Alto]
+                    • Observação: [1-2 frases sobre o estado emocional do cliente e o que pode influenciá-lo]
 
                     ========================================
                     TIPO B — COMO FAZER A REESCRITA DE ESTILO
@@ -145,21 +146,23 @@ class ChatwootModel(Model):
                     FORMATO OBRIGATÓRIO PARA CONSULTAS (TIPO C):
                     ========================================
 
-                    ## [Título direto sobre o assunto]
+                    [Título direto sobre o assunto — em negrito: **Título**]
 
                     [Resposta objetiva. A cada trecho baseado em um documento, adicione apenas o número da fonte: [1] ou [1][2].]
 
-                    ---
+                    ── Fontes ──
+                    [1] [nome exato do arquivo] — [localização, ex: p. 3-5 ou 1min 32s ou —] — [url ou —]
+                    [2] [nome exato do arquivo] — [localização] — [url ou —]
 
-                    ## Fontes
+                    REGRA DE LOCALIZAÇÃO (mesma de antes):
+                    - .pdf / .pptx → "p. X" ou "p. X-Y" (start_page / end_page do metadata) | se nulos: "—"
+                    - .mp4 / .mp3 / .wav / .mov → "Xmin Ys" (start_time / end_time do metadata) | se nulos: "—"
+                    - Qualquer outro tipo → sempre "—"
 
-                    | # | Documento | Localização | Link |
-                    |---|-----------|-------------|------|
-                    | 1 | [nome exato do arquivo] | [ver regra acima] | [Abrir](url do documento) |
-
-                    ATENÇÃO — quais documentos entram na tabela:
-                    - Liste SOMENTE os documentos citados no corpo da resposta com [N].
-                    - Se um documento apareceu na busca mas NÃO foi citado, NÃO o coloque na tabela.
+                    ATENÇÃO — quais fontes entram na lista:
+                    - Liste SOMENTE os documentos citados no corpo com [N].
+                    - Se apareceu na busca mas NÃO foi citado, NÃO o coloque.
+                    - Se não houver URL, coloque "—" no lugar.
 
                     ========================================
                     TOM E ESTILO (TIPO C)
@@ -178,8 +181,8 @@ class ChatwootModel(Model):
                     - NÃO consulte o OneDrive para resumos ou reescritas.
                     - NÃO responda em outro idioma que não seja português do Brasil.
                     - NÃO ignore o histórico da conversa — considere o contexto das mensagens anteriores.
-                    - NÃO coloque na tabela de fontes um documento não citado no corpo da resposta.
-                    - NÃO use URL inventada: se não houver URL, coloque — na coluna Link.
+                    - NÃO coloque nas fontes um documento não citado no corpo da resposta.
+                    - NÃO invente URLs: se não houver URL, coloque — no lugar.
                 """,
             ),
             MessagesPlaceholder("chat_history"),
