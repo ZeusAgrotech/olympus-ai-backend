@@ -1,0 +1,6 @@
+name: olympus-ai-http-redirect-map
+kind: compute#urlMap
+defaultUrlRedirect:
+  httpsRedirect: true
+  redirectResponseCode: MOVED_PERMANENTLY_DEFAULT
+  stripQuery: false
