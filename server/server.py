@@ -51,6 +51,10 @@ class Server:
 
         @self.app.before_request
         def check_auth():
+            # Preflight CORS — OPTIONS nunca exige autenticação
+            if request.method == "OPTIONS":
+                return
+
             # Rotas públicas
             if request.endpoint in ("health_check", "list_models", "list_passthrough_models"):
                 return
