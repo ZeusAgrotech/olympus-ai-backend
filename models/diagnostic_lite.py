@@ -12,9 +12,6 @@ class DiagnosticLiteModel(Model):
     name = "diagnosis"
 
     description = "Agente de diagnóstico rápido do parque de dispositivos. Respostas diretas e objetivas sobre status e problemas."
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5-mini", temperature=0.1)
 
     tools = [

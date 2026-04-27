@@ -15,9 +15,6 @@ class WebSearchModel(Model):
         "Use para encontrar notícias, dados atualizados e conteúdos disponíveis na internet."
     )
 
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5.4-nano", temperature=0.1)
 
     tools = [*WebSearchStore().as_tool()]

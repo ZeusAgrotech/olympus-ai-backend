@@ -20,9 +20,6 @@ class DiagnosticFullModel(Model):
     name = "diagnosis"
 
     description = "Agente especialista em diagnóstico de saúde do parque de dispositivos. Utiliza execução paralela (Multitask) verificação completa de Rede e Energia."
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5.4", temperature=0.1)
 
     agents = []

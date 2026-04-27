@@ -15,9 +15,6 @@ class OneDriveModel(Model):
         "Use para encontrar informações em arquivos, documentos e conteúdos sincronizados."
     )
 
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5.4-nano", temperature=0.1)
 
     tools = [OneDriveStore().as_tool()]

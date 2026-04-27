@@ -1,6 +1,7 @@
 from abc import ABC
 from functools import lru_cache
 import queue
+import re
 import threading
 
 from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
@@ -60,7 +61,11 @@ class Model(ABC):
     # Inicialização
     # =========================
 
-    def __init__(self):
+    def __init__(self, verbose: bool = True, return_intermediate_steps: bool = True, include_thought: bool = True):
+        self.verbose = verbose
+        self.return_intermediate_steps = return_intermediate_steps
+        self.include_thought = include_thought
+
         # 1. Validações de atributos obrigatórios
         if not getattr(self, "description", None):
             raise ValueError(
@@ -96,12 +101,6 @@ class Model(ABC):
                     self.tools.extend(tools_or_tool)
                 else:
                     self.tools.append(tools_or_tool)
-
-        if not getattr(self, "verbose", None):
-            self.verbose = False
-
-        if not getattr(self, "return_intermediate_steps", None):
-            self.return_intermediate_steps = False
 
         # 3. Inicialização do Core do Agente (LangChain)
         try:
@@ -188,8 +187,12 @@ class Model(ABC):
         response = self.agent_executor.invoke(input_data, config, *args, **kwargs)
 
         if isinstance(response, dict):
-            thought = self._format_intermediate_steps(response.get("intermediate_steps"))
-            response["thought"] = thought
+            if self.include_thought:
+                thought = self._format_intermediate_steps(response.get("intermediate_steps"))
+                response["thought"] = thought
+            else:
+                output = response.get("output", "")
+                response["output"] = re.sub(r"<think>.*?</think>", "", output, flags=re.DOTALL).strip()
 
         return response
 

@@ -23,6 +23,9 @@ class Agent(ABC):
     """
 
     hidden: bool = False
+    verbose: bool = True
+    return_intermediate_steps: bool = True
+    include_thought: bool = True
 
     _normalize_message_content = staticmethod(normalize_message_content)
     _extract_last_user_message = staticmethod(extract_last_user_message)
@@ -113,6 +116,9 @@ class Agent(ABC):
             )
 
         model_init_kwargs = dict(getattr(self, "model_init_kwargs", {}) or {})
+        model_init_kwargs.setdefault("verbose", self.verbose)
+        model_init_kwargs.setdefault("return_intermediate_steps", self.return_intermediate_steps)
+        model_init_kwargs.setdefault("include_thought", self.include_thought)
 
         if isinstance(declared_model, type):
             if not issubclass(declared_model, Model):
@@ -221,6 +227,7 @@ class Agent(ABC):
             request_data = request_data or {}
             user_input = request_data.get("_last_user_message") or self._extract_last_user_message(messages)
             chat_history = self._to_langchain_history(messages)
+            include_thought = getattr(self, "include_thought", True)
 
             thought_queue = _queue.Queue()
             chunk_queue = _queue.Queue()
@@ -241,7 +248,9 @@ class Agent(ABC):
             while True:
                 # Drena pensamentos internos acumulados enquanto a ferramenta rodava
                 while not thought_queue.empty():
-                    yield {"thought": thought_queue.get_nowait()}
+                    thought = thought_queue.get_nowait()
+                    if include_thought:
+                        yield {"thought": thought}
 
                 try:
                     item_type, item = chunk_queue.get(timeout=30)
@@ -253,14 +262,16 @@ class Agent(ABC):
                 if item_type == "done":
                     # Drena pensamentos restantes antes de encerrar
                     while not thought_queue.empty():
-                        yield {"thought": thought_queue.get_nowait()}
+                        thought = thought_queue.get_nowait()
+                        if include_thought:
+                            yield {"thought": thought}
                     break
                 if item_type == "error":
                     raise item
 
                 chunk = item
                 if isinstance(chunk, dict):
-                    if "actions" in chunk:
+                    if "actions" in chunk and include_thought:
                         for action in chunk["actions"]:
                             label = self._action_to_human_label(action)
                             if label:

@@ -15,9 +15,6 @@ class SaoriModel(Model):
         "Saori — planner ágil e econômico da Olympus AI. "
         "Ideal para tarefas simples, respostas rápidas e uso cotidiano."
     )
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5-mini", temperature=0.2)
 
     agents = [DiagnosticLiteModel]

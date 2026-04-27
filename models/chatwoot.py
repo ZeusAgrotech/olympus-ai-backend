@@ -16,9 +16,6 @@ class ChatwootModel(Model):
         "consultas à base documental e sugestão de resposta ao cliente."
     )
 
-    verbose = True
-    return_intermediate_steps = True
-
     llm = LLM("gpt-5.4", temperature=0.2)
 
     tools = [OneDriveStore().as_tool()]
