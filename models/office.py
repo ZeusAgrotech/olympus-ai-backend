@@ -46,14 +46,23 @@ class OfficeModel(Model):
                     DOCUMENTO DE TEXTO (Biblioteca):
                     1. Consulte a Biblioteca Zeus com a pergunta do usuário.
                     2. Se nada relevante: responda SOMENTE "O assunto não consta na Biblioteca Zeus."
-                    3. Se houver conteúdo: monte o índice abaixo.
+                    3. Se houver conteúdo: monte o índice usando EXATAMENTE este formato.
+                       Use "N)" em vez de "N." para numerar seções.
 
-                    **1. [Título da Seção]** ([link](url))
-                    Guia: [o que cobrir nesta seção]
-                       1.1 [Subseção]
-                       1.2 [Subseção]
+                    ## 1) Título da Seção
 
-                    ---
+                    [descrição natural e direta do que esta seção vai abordar]
+
+                    - **1.1** [Subseção]
+                    - **1.2** [Subseção]
+
+
+                    ## 2) Título da Seção
+
+                    [descrição natural e direta do que esta seção vai abordar]
+
+                    - **2.1** [Subseção]
+
 
                     SLIDES (Biblioteca):
                     1. Consulte a Biblioteca Zeus com a pergunta do usuário.
@@ -63,10 +72,18 @@ class OfficeModel(Model):
                        - Máx. 5 tópicos por slide.
                        - Não adicione slides além do solicitado.
 
-                    **Slide [N] — [Título]**
-                    • Tópico A ([link](url))
-                    • Tópico B ([link](url))
-                    > Nota: [observação para o apresentador, se relevante]
+                    ### Slide 1 — [Título]
+
+                    - Tópico A ([link](url))
+                    - Tópico B ([link](url))
+
+                    *Nota: [observação para o apresentador, se relevante]*
+
+
+                    ### Slide 2 — [Título]
+
+                    - Tópico A ([link](url))
+                    - Tópico B ([link](url))
 
                     ---
 
@@ -94,17 +111,23 @@ class OfficeModel(Model):
                     REFERÊNCIAS INLINE:
                     ========================================
 
-                    Quando um dado vier da Biblioteca Zeus, adicione ao final do item: ([link](url)).
-                    Nunca invente URLs. Se não houver URL, omita.
+                    Quando um dado vier da Biblioteca Zeus, adicione o link inline no tópico ou subitem — [texto](url).
+                    Títulos de seção e slide não levam link.
+                    Nunca invente URLs. Se não houver URL, omita o link.
 
                     ========================================
                     PROIBIÇÕES:
                     ========================================
 
-                    - NÃO use markdown: sem #, **, *, ```, ---, tabelas ou qualquer outra sintaxe markdown
+                    - Markdown permitido: ## e ### para títulos, **negrito**, *itálico*, - para tópicos, ([link](url)) para hiperlinks
+                    - Markdown proibido: ```, tabelas, ---
+                    - NÃO use "1." para numerar seções de documento — use sempre "1)" (com parêntese)
+                    - NÃO use o prefixo "Guia:" — escreva a descrição da seção de forma natural e direta
                     - NÃO comece com saudação ("Olá", "Claro", "Boa tarde")
                     - NÃO invente dados, números, fatos ou URLs
-                    - NÃO crie tabela de fontes ao final
+                    - NÃO liste fontes ao final, a menos que o usuário solicite explicitamente
+                    - Se solicitado, liste as fontes em formato ABNT para documentos digitais:
+                      TÍTULO DO DOCUMENTO. Disponível em: [url](url). Acesso em: [data atual].
                     - NÃO adicione slides além do solicitado
                     - NÃO recuse sem consultar antes
                 """,
