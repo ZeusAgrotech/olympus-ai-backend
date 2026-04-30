@@ -8,7 +8,7 @@ substitutions:
   _ARTIFACT_REPO: olympus-ai-backend
   _IMAGE_TAG: latest
   _ENVIRONMENT: accept
-  _MCP_DIAGNOSIS_BASE_URL: "https://mcp-diagnosis-server-ukneqvhpoa-uc.a.run.app"
+  _MCP_DIAGNOSIS_BASE_URL: "MUST_BE_SET_BY_TRIGGER"
   _MCP_DIAGNOSIS_TIMEOUT_SECONDS: "300"
 
 options:

@@ -1,0 +1,12 @@
+name: olympus-ai-backend
+description: "Olympus AI backend - build and deploy to production on push to main"
+github:
+  owner: ZeusAgrotech
+  name: olympus-ai-backend
+  push:
+    branch: ^main$
+filename: cloudbuild.yaml
+substitutions:
+  _IMAGE_TAG: $SHORT_SHA
+  _MCP_DIAGNOSIS_BASE_URL: https://mcp-diagnosis-server-k56tkf3hxq-uc.a.run.app
+  _ENVIRONMENT: production

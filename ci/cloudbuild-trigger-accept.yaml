@@ -1,0 +1,12 @@
+name: olympus-ai-backend
+description: "Olympus AI backend - build and deploy to acceptance on push to acceptance"
+github:
+  owner: ZeusAgrotech
+  name: olympus-ai-backend
+  push:
+    branch: ^acceptance$
+filename: cloudbuild.yaml
+substitutions:
+  _IMAGE_TAG: $SHORT_SHA
+  _MCP_DIAGNOSIS_BASE_URL: https://mcp-diagnosis-server-ukneqvhpoa-uc.a.run.app
+  _ENVIRONMENT: accept
