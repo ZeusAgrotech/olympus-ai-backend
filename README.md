@@ -170,7 +170,7 @@ Copie `.env.example` → `.env`:
 | `MCP_DIAGNOSIS_BASE_URL` | Não | URL do microserviço MCP Diagnosis |
 | `MCP_DIAGNOSIS_AUTH_TOKEN` | Não | Token Bearer do microserviço MCP |
 | `MCP_DIAGNOSIS_TIMEOUT_SECONDS` | Não | Timeout MCP (padrão: 300) |
-| `AUTH_API_KEY` | **Sim** | API keys válidas, separadas por vírgula. Em GCP, injetado via Secret Manager. |
+| `AUTH_API_KEY` | Não | API keys válidas, separadas por vírgula. Se ausente, autenticação é desabilitada. Em GCP, injetado via Secret Manager. |
 | `GOOGLE_API_KEY` | Não | Google Gemini |
 | `ANTHROPIC_API_KEY` | Não | Anthropic Claude |
 | `PORT` | Não | Porta do servidor (padrão: 6001) |

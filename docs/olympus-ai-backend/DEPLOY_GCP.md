@@ -144,7 +144,7 @@ Se o backend precisa acessar recursos que **só aceitam IPs na allowlist** (como
 
 - Em **Cloud Run**, o secret `OLYMPUS_AUTH_API_KEY` contém uma ou mais chaves brutas separadas por vírgula (sem espaços). Ex.: `sk_abc,sk_def`. O deploy mapeia esse secret para a env var `AUTH_API_KEY`.
 
-- Em **local**, definir `AUTH_API_KEY=sk_dev` no `.env`.
+- Em **local**, definir `AUTH_API_KEY=sk_dev` no `.env`. Se a variável estiver ausente, a autenticação é desabilitada por completo — útil para desenvolvimento sem precisar configurar nada.
 
 - Requisições HTTP: header `Authorization: Bearer sk_...` (sempre com prefixo `Bearer `).
 

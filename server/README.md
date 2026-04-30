@@ -50,19 +50,22 @@ Singleton Flask. Acesse sempre via `Server.get_instance()`.
 
 ## Autenticação
 
-`before_request` valida o header `Authorization: Bearer <key>` em todas as rotas protegidas. Rotas públicas são isentas por endpoint name.
+`before_request` valida o header `Authorization: Bearer <key>` em todas as rotas protegidas. Se `AUTH_API_KEY` não estiver definida, a autenticação é desabilitada por completo.
 
 ```mermaid
 flowchart TD
     REQ["Requisição HTTP"]
+    ENVSET{"AUTH_API_KEY\nconfigurada?"}
     PUBLIC{"endpoint público?\nhealth_check\nlist_models\nlist_passthrough_models"}
     HEADER{"Authorization: Bearer xxx?"}
-    VALIDATE{"validate_api_key()"}
+    VALIDATE{"chave na lista?"}
     OK["✓ Prossegue"]
     ERR401_MISSING["401 — Missing Authorization header"]
     ERR401_INVALID["401 — Invalid API Key"]
 
-    REQ --> PUBLIC
+    REQ --> ENVSET
+    ENVSET -- Não --> OK
+    ENVSET -- Sim --> PUBLIC
     PUBLIC -- Sim --> OK
     PUBLIC -- Não --> HEADER
     HEADER -- Não --> ERR401_MISSING
@@ -71,7 +74,7 @@ flowchart TD
     VALIDATE -- Inválida --> ERR401_INVALID
 ```
 
-A validação compara o Bearer token contra `AUTH_API_KEY` (env var, lista separada por vírgula).
+A validação compara o Bearer token contra `AUTH_API_KEY` (env var, lista separada por vírgula). Em desenvolvimento local, basta omitir a variável para rodar sem auth.
 
 ---
 
