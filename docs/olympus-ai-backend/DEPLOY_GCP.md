@@ -140,11 +140,11 @@ Se o backend precisa acessar recursos que **só aceitam IPs na allowlist** (como
 
 ---
 
-## 8. Chaves de API (auth local vs Cloud Run)
+## 8. Chaves de API
 
-- Em **Cloud Run**, definir o secret `OLYMPUS_AUTH_API_KEY` com uma ou mais chaves brutas separadas por vírgula (sem espaços). Ex.: `sk_abc,sk_def`. O deploy mapeia esse secret para a env var `AUTH_API_KEY`, que o código em `auth/api_keys.py` valida antes de usar SQLite.
+- Em **Cloud Run**, o secret `OLYMPUS_AUTH_API_KEY` contém uma ou mais chaves brutas separadas por vírgula (sem espaços). Ex.: `sk_abc,sk_def`. O deploy mapeia esse secret para a env var `AUTH_API_KEY`.
 
-- Em **local**, pode-se usar `keys.sh` e `auth/auth.db`, ou definir `AUTH_API_KEY` no `.env`.
+- Em **local**, definir `AUTH_API_KEY=sk_dev` no `.env`.
 
 - Requisições HTTP: header `Authorization: Bearer sk_...` (sempre com prefixo `Bearer `).
 

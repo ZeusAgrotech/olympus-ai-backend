@@ -42,27 +42,6 @@ if [ "$MODE" = "docker" ]; then
     if [ -n "$DOCKER_COMPOSE_CMD" ]; then
         echo "Removing Docker resources..."
         $DOCKER_COMPOSE_CMD down --rmi all -v
-        
-        # Ask about auth.db deletion (Docker mode)
-        if [ -f "auth/auth.db" ]; then
-            # CREATE BACKUP FIRST
-            cp "auth/auth.db" "auth/auth.db.bak"
-            echo "Backup created at auth/auth.db.bak"
-            
-            read -p "Do you want to delete the authentication database (auth/auth.db)? [y/N]: " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                echo "Removing auth/auth.db..."
-                rm -f auth/auth.db 2>/dev/null
-                if [ -f "auth/auth.db" ]; then
-                    echo "Warning: auth/auth.db is owned by root (from Docker). Removing with sudo..."
-                    sudo rm -f auth/auth.db
-                fi
-                echo "auth/auth.db removed. (Backup kept at auth/auth.db.bak)"
-            else
-                echo "Keeping auth/auth.db."
-            fi
-        fi
     else
         echo "Docker Compose not found, skipping Docker cleanup."
     fi
@@ -71,33 +50,10 @@ elif [ "$MODE" = "local" ]; then
     # 2. Local Cleanup
     echo "Removing local environment (.venv) and caches..."
     rm -rf .venv
-    
+
     # Remove files, suppressing errors initially
     find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
-    
-    # Ask about auth.db deletion (Local mode)
-    if [ -f "auth/auth.db" ]; then
-        # CREATE BACKUP FIRST
-        cp "auth/auth.db" "auth/auth.db.bak"
-        echo "Backup created at auth/auth.db.bak"
-        
-        read -p "Do you want to delete the authentication database (auth/auth.db)? [y/N]: " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo "Removing auth/auth.db..."
-            rm -f auth/auth.db 2>/dev/null
-            
-            # Check if still exists (likely owned by root)
-            if [ -f "auth/auth.db" ]; then
-                echo "Warning: auth/auth.db is owned by root (from Docker). Removing with sudo..."
-                sudo rm -f auth/auth.db
-            fi
-            echo "auth/auth.db removed. (Backup kept at auth/auth.db.bak)"
-        else
-            echo "Keeping auth/auth.db."
-        fi
-    fi
-    
+
     # Check if there are still pycache files left (likely owned by root)
     if [ -d "__pycache__" ] || find . -name "__pycache__" | grep -q "__pycache__"; then
          echo "Warning: Some __pycache__ files are owned by root (from Docker)."

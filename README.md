@@ -170,7 +170,7 @@ Copie `.env.example` → `.env`:
 | `MCP_DIAGNOSIS_BASE_URL` | Não | URL do microserviço MCP Diagnosis |
 | `MCP_DIAGNOSIS_AUTH_TOKEN` | Não | Token Bearer do microserviço MCP |
 | `MCP_DIAGNOSIS_TIMEOUT_SECONDS` | Não | Timeout MCP (padrão: 300) |
-| `AUTH_API_KEY` | Prod | Keys de produção, separadas por vírgula (Cloud Run) |
+| `AUTH_API_KEY` | **Sim** | API keys válidas, separadas por vírgula. Em GCP, injetado via Secret Manager. |
 | `GOOGLE_API_KEY` | Não | Google Gemini |
 | `ANTHROPIC_API_KEY` | Não | Anthropic Claude |
 | `PORT` | Não | Porta do servidor (padrão: 6001) |
@@ -203,14 +203,6 @@ gunicorn wsgi:app --workers 2 --threads 4 --bind 0.0.0.0:8080
 ```
 
 Ver [`docs/olympus-ai-backend/DEPLOY_GCP.md`](docs/olympus-ai-backend/DEPLOY_GCP.md) para deploy no GCP.
-
-### Gerenciar API Keys
-
-```bash
-python auth/manage_keys.py create "nome-do-cliente" 2025-12-31
-python auth/manage_keys.py list
-python auth/manage_keys.py delete <id>
-```
 
 ---
 

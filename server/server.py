@@ -7,8 +7,13 @@ import json
 import time
 import uuid
 
-from auth.api_keys import validate_api_key
+import os
 from tools.messages import normalize_message_content, extract_last_user_message
+
+
+def _validate_api_key(raw_key: str) -> bool:
+    env_keys = os.getenv("AUTH_API_KEY", "")
+    return bool(raw_key) and raw_key in [k.strip() for k in env_keys.split(",") if k.strip()]
 
 
 class Server:
@@ -73,7 +78,7 @@ class Server:
 
             api_key = auth_header.split(" ", 1)[1].strip()
 
-            if not api_key or not validate_api_key(api_key):
+            if not api_key or not _validate_api_key(api_key):
                 return (
                     jsonify(
                         {

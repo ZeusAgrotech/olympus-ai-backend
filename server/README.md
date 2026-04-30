@@ -71,9 +71,7 @@ flowchart TD
     VALIDATE -- Inválida --> ERR401_INVALID
 ```
 
-A validação delega para `auth.api_keys.validate_api_key()`, que suporta:
-1. Chaves no SQLite (`auth/auth.db`)
-2. Chave(s) em `AUTH_API_KEY` (env var, para Cloud Run)
+A validação compara o Bearer token contra `AUTH_API_KEY` (env var, lista separada por vírgula).
 
 ---
 

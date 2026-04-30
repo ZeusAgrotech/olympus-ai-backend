@@ -49,7 +49,6 @@ logs/
 .DS_Store
 
 # Keys / secrets
-keys.sh
 *.pem
 *.key
 *.p12
