@@ -65,7 +65,7 @@ class Server:
                 return
 
             # Rotas públicas
-            if request.endpoint in ("health_check", "list_models", "list_passthrough_models"):
+            if request.endpoint in ("health_check", "list_models"):
                 return
 
             auth_header = request.headers.get("Authorization", "")
@@ -508,26 +508,6 @@ class Server:
 
             return jsonify(response_payload)
 
-        @self.app.route("/passthrough/", methods=["GET"])
-        @self.app.route("/passthrough", methods=["GET"])
-        def list_passthrough_models():
-            models_data = []
-
-            for model_id, meta in self.chat_model_registry.items():
-                if not meta.get("passthrough"):
-                    continue
-
-                models_data.append(
-                    {
-                        "id": model_id,
-                        "object": "model",
-                        "created": meta["created"],
-                        "provider": meta["provider"],
-                    }
-                )
-
-            return jsonify({"object": "list", "data": models_data})
-
         @self.app.route("/health", methods=["GET"])
         def health_check():
             return jsonify(
@@ -569,8 +549,6 @@ class Server:
             "owned_by": getattr(agent, "owned_by", "zeus"),
             "aliases": normalized_aliases,
             "hidden": bool(getattr(agent, "hidden", False)),
-            "passthrough": bool(getattr(agent, "passthrough", False)),
-            "provider": getattr(agent, "provider", None),
         }
 
     def start(self, host="0.0.0.0", port=5000, debug=True):
@@ -582,26 +560,15 @@ class Server:
         print("   - POST /chat/completions    - OpenAI-compatible chat completions")
         print("   - POST /v1/chat/completions - OpenAI-compatible chat completions")
         print("   - GET  /health              - Health check")
-        print("   - GET  /passthrough         - List passthrough models")
-
-        agents = {k: v for k, v in self.chat_model_registry.items() if not v.get("passthrough")}
-        passthroughs = {k: v for k, v in self.chat_model_registry.items() if v.get("passthrough")}
 
         print("\nAgents:")
-        if not agents:
+        if not self.chat_model_registry:
             print("   - (none)")
         else:
-            for model_id, meta in agents.items():
+            for model_id, meta in self.chat_model_registry.items():
                 print(f"   - {model_id}")
                 for alias in meta["aliases"]:
                     print(f"     alias: {alias}")
-
-        print("\nPassthrough models:")
-        if not passthroughs:
-            print("   - (none)")
-        else:
-            for model_id in passthroughs:
-                print(f"   - {model_id}")
 
         print("\n" + "=" * 50)
         self.app.run(host=host, port=port, debug=debug)
