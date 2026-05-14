@@ -1,8 +1,8 @@
-name: olympus-ai-backend
-description: "Olympus AI backend - build and deploy to acceptance on push to acceptance"
+name: olympus-ai-server
+description: "Olympus AI server - build and deploy to acceptance on push to acceptance"
 github:
   owner: ZeusAgrotech
-  name: olympus-ai-backend
+  name: olympus-ai-server
   push:
     branch: ^acceptance$
 filename: cloudbuild.yaml
