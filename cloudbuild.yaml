@@ -41,6 +41,7 @@ steps:
       - managed
       - "--allow-unauthenticated"
       - "--timeout=600"
+      - "--min-instances=1"
       - "--set-env-vars"
       - >-
         ENVIRONMENT=${_ENVIRONMENT},MCP_DIAGNOSIS_BASE_URL=${_MCP_DIAGNOSIS_BASE_URL},MCP_DIAGNOSIS_TIMEOUT_SECONDS=${_MCP_DIAGNOSIS_TIMEOUT_SECONDS}
