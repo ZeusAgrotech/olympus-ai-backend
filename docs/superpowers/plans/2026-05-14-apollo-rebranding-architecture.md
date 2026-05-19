@@ -1733,52 +1733,39 @@ gcloud builds triggers delete <ID> --project=zeus-accept
 
 ---
 
-### ✅ Feito (commitado)
+### ✅ Feito e pusheado para `acceptance`
 
-| Repo | O que foi feito |
-|---|---|
-| `olympus-ai-backend` | Task 1: CI/CD renomeado para `olympus-ai-server` (commit `88f3b78`) |
-| `olympus-ai-backend` | `cloudbuild.yaml`: `--min-instances=1` → `--min-instances=0` (frontend resiliente ao coldstart via polling) |
-| `app-apollo-server` | Tasks 2–7: bootstrap completo, proxy, server, entrypoints, CI/CD configs (5 commits, branch `main`, não pusheados) |
-| `app-apollo-server` | `cloudbuild.yaml`: `--min-instances=1` → `--min-instances=0` (idem) |
-
----
-
-### ⚠️ Feito mas NÃO commitado
-
-| Repo | Branch | O que está pendente de commit |
+| Repo | Branch | O que foi feito |
 |---|---|---|
-| `olympus-ai-backend` | `acceptance` | Atualização do plano (`docs/superpowers/plans/`) |
-| `olympus-ai-frontend` | `main` | 13 arquivos modificados + `librechat.prod.yaml` (untracked) — ver lista abaixo |
-
-**Arquivos modificados no `olympus-ai-frontend` (não commitados):**
-- `ci/cloudbuild-trigger-accept.yaml` — renomeado para `app-apollo-frontend`, `_ENVIRONMENT: accept`
-- `ci/cloudbuild-trigger-prod.yaml` — renomeado para `app-apollo-frontend`, `_ENVIRONMENT: production`
-- `cloudbuild.yaml` — step `sync-config` copia yaml por ambiente, imagens renomeadas, env vars/secrets atualizados
-- `librechat.yaml` — acceptance: Apollo + Olympus, `fetch: true`, sem `default`
-- `librechat.prod.yaml` *(untracked)* — prod: só Apollo, `fetch: true`, sem `default`
-- `librechat/api/server/controllers/ModelController.js` — cache removido (sempre re-fetch dos backends)
-- `librechat/client/src/hooks/Endpoint/useEndpoints.ts` — polling: 10s (vazio) / 5min (preenchido)
-- `librechat/client/src/components/Chat/Menus/Endpoints/components/EndpointItem.tsx` — spinner sempre quando `!hasModels`, `handleRefreshModels` removido
-- Outros arquivos (`selector.ts`, `types.ts`, `ModelSelect.tsx`, `OpenAI.tsx`, `react-query-service.ts`) — alterações da sessão anterior (spinner, isLoadingModels)
+| `olympus-ai-backend` | `acceptance` | Task 1: CI/CD renomeado para `olympus-ai-server`; plano atualizado; `--min-instances=0` |
+| `app-apollo-server` | `acceptance` | Tasks 2–7 completas; `ALLOWED_MODELS` removido; `_PUBLISHED_MODELS = {"OneDrive"}` hardcoded em `proxy/olympus.py`; 15 testes passando |
+| `olympus-ai-frontend` | `acceptance` | Renomeado para `app-apollo-frontend`; `librechat.yaml` com Apollo + Olympus (acceptance) e `librechat.prod.yaml` só Apollo (prod); `fetch: true`, `default: ["Loading..."]`; polling coldstart (10s vazio / 5min cheio); spinner `!hasModels`; cache removido do ModelController |
 
 ---
 
-### ❌ Pendente no código (não implementado)
+### ✅ Acceptance — Cloud Run (zeus-accept)
 
-| Repo | O que falta |
-|---|---|
-| `app-apollo-server` | Remover `ALLOWED_MODELS` do código: `proxy/olympus.py` (`_allowed_models`, `is_model_allowed`, `_fallback_models`, filtragem em `list_models`) e `server/server.py` (check `is_model_allowed` em `/chat/completions`). O apollo deve ser proxy puro. |
+Todos os 3 serviços existem e estavam healthy antes do último deploy:
+- `olympus-ai-server` — https://olympus-ai-server-ukneqvhpoa-uc.a.run.app
+- `app-apollo-server` — https://app-apollo-server-ukneqvhpoa-uc.a.run.app (retorna só `OneDrive`)
+- `app-apollo-frontend` — https://app-apollo-frontend-ukneqvhpoa-uc.a.run.app
+
+**Último build do frontend (acceptance) falhou** por secrets ausentes no projeto `zeus-accept`:
+- `JWT_SECRET` — não existe
+- `JWT_REFRESH_SECRET` — não existe
+- `MONGO_URI` — não existe
+- `OLYMPUS_SERVER_URL` — criado (aponta para olympus-ai-server accept)
+- `OLYMPUS_SERVER_AUTH_KEY` — já existia
+- `APOLLO_AUTH_API_KEY` — já existia
 
 ---
 
-### 🔲 Não iniciado (Fase 2 e 3 — Cloud Run)
+### 🔲 Não iniciado (Fase 2 e 3 — Cloud Run / Prod)
 
-- Task 9: Teste de integração local
-- Task 10: GCP — Artifact Registry repos + secrets (`OLYMPUS_SERVER_AUTH_KEY`, `APOLLO_AUTH_API_KEY`)
-- Task 11: Deploy `olympus-ai-server` no Cloud Run
-- Task 12: Deploy `app-apollo-server` no Cloud Run
-- Task 13: Deploy `app-apollo-frontend` no Cloud Run
+- Task 10: GCP — Artifact Registry repos (prod: `olympus-ai-server`, `app-apollo-server`, `app-apollo-frontend`) + secrets prod (`OLYMPUS_SERVER_AUTH_KEY`, `APOLLO_AUTH_API_KEY`)
+- Task 11: Deploy `olympus-ai-server` no Cloud Run prod
+- Task 12: Deploy `app-apollo-server` no Cloud Run prod
+- Task 13: Deploy `app-apollo-frontend` no Cloud Run prod
 - Task 14: Atualizar secrets do `chronos-diagnosis`, deletar serviços antigos
 - Task 15: Criar Cloud Build Triggers novos, deletar antigos
 
@@ -1786,7 +1773,6 @@ gcloud builds triggers delete <ID> --project=zeus-accept
 
 ### ⚠️ Atenção antes de continuar
 
-1. **Branch do apollo:** está em `main`, não em `acceptance`. Definir estratégia de branch antes de pushar.
-2. **Branch do frontend:** está em `main`. Os 13 arquivos não commitados precisam ser commitados e a branch definida.
-3. **ALLOWED_MODELS no apollo:** ainda presente no código — remover antes de qualquer deploy.
-4. **Commits do olympus (plano):** não commitados — commitá-los na branch `acceptance`.
+1. **Secrets ausentes em `zeus-accept`:** `JWT_SECRET`, `JWT_REFRESH_SECRET`, `MONGO_URI` precisam ser criados para o build do `app-apollo-frontend` passar. Os valores devem ser os mesmos usados pelo serviço `olympus-ai-frontend` (já existente em accept) para não quebrar sessões.
+2. **`app-apollo-server` local:** branch local é `main`. Push vai para `origin/acceptance` via `git push origin main:acceptance`. Não há branch `acceptance` local.
+3. **`OLYMPUS_SERVER_AUTH_KEY` em prod:** ainda não existe — criar antes do deploy prod.
