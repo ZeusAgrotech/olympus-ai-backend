@@ -2,9 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Introduzir `app-apollo-server` como proxy OpenAI-compatible entre o frontend LibreChat e o `olympus-ai-server`, com filtragem de modelos por ambiente, e renomear todos os serviços e repos para refletir a identidade Apollo Intelligence.
+**Goal:** Introduzir `app-apollo-server` como proxy OpenAI-compatible entre o frontend LibreChat e o `olympus-ai-server`, e renomear todos os serviços e repos para refletir a identidade Apollo Intelligence.
 
-**Architecture:** O frontend (`app-apollo-frontend`) aponta para `app-apollo-server` (Flask, proxy leve). O apollo-server filtra modelos via `ALLOWED_MODELS` e repassa payloads integralmente (incluindo streaming SSE) para `olympus-ai-server`. O olympus não muda de comportamento — apenas é renomeado.
+**Architecture:** O frontend (`app-apollo-frontend`) aponta para `app-apollo-server` (Flask, proxy puro — autenticação e repasse, sem filtragem de modelos). O apollo-server repassa payloads integralmente (incluindo streaming SSE) para `olympus-ai-server`. O olympus não muda de comportamento — apenas é renomeado.
+
+**Separação por ambiente:** feita via dois arquivos `librechat.yaml`:
+- `librechat.yaml` — acceptance: endpoints Apollo + Olympus, `fetch: true`, sem lista hardcoded
+- `librechat.prod.yaml` — produção: apenas endpoint Apollo, `fetch: true`, sem lista hardcoded
+
+O cloudbuild copia o arquivo correto antes de buildar a imagem. `ALLOWED_MODELS` foi removido — a visibilidade de modelos é controlada pelo atributo `hidden` no olympus (por agente), não por filtragem no proxy.
 
 **Tech Stack:** Python 3.11, Flask, httpx, gunicorn, pytest, Docker, Cloud Run (GCP), Cloud Build, Secret Manager.
 
@@ -198,13 +204,10 @@ OLYMPUS_SERVER_AUTH_KEY=sk_dev_olympus
 # Auth: chave que o frontend usa para autenticar neste servidor
 AUTH_API_KEY=sk_dev_apollo
 
-# Modelos permitidos: "*" para todos, ou lista separada por vírgula
-# Prod: "OneDrive,WebSearch"
-# Accept/Local: "*"
-ALLOWED_MODELS=*
-
 ENVIRONMENT=local
 ```
+
+> **Nota:** `ALLOWED_MODELS` foi removido. A visibilidade de modelos é controlada pelo atributo `hidden` em cada agente do olympus — o apollo é um proxy puro.
 
 - [ ] **Step 4: Criar `Dockerfile`**
 
@@ -585,47 +588,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 
-def test_allowed_models_returns_none_for_star(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "*")
-    from proxy.olympus import _allowed_models
-    assert _allowed_models() is None
-
-
-def test_allowed_models_parses_csv(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "OneDrive, WebSearch")
-    from proxy.olympus import _allowed_models
-    assert _allowed_models() == ["OneDrive", "WebSearch"]
-
-
-def test_allowed_models_default_is_star(monkeypatch):
-    monkeypatch.delenv("ALLOWED_MODELS", raising=False)
-    from proxy.olympus import _allowed_models
-    assert _allowed_models() is None
-
-
-def test_is_model_allowed_star_allows_all(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "*")
-    from proxy.olympus import is_model_allowed
-    assert is_model_allowed("Athena") is True
-    assert is_model_allowed("anything") is True
-
-
-def test_is_model_allowed_list_allows_listed(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "OneDrive,WebSearch")
-    from proxy.olympus import is_model_allowed
-    assert is_model_allowed("OneDrive") is True
-    assert is_model_allowed("WebSearch") is True
-
-
-def test_is_model_allowed_list_blocks_unlisted(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "OneDrive,WebSearch")
-    from proxy.olympus import is_model_allowed
-    assert is_model_allowed("Athena") is False
-    assert is_model_allowed("Saori") is False
-
-
-def test_list_models_returns_all_when_star(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "*")
+def test_list_models_returns_all(monkeypatch):
     monkeypatch.setenv("OLYMPUS_SERVER_URL", "http://test")
     monkeypatch.setenv("OLYMPUS_SERVER_AUTH_KEY", "key")
 
@@ -649,34 +612,9 @@ def test_list_models_returns_all_when_star(monkeypatch):
         result = list_models()
 
     assert result == olympus_data
-
-
-def test_list_models_filters_by_allowed_models(monkeypatch):
-    monkeypatch.setenv("ALLOWED_MODELS", "OneDrive,WebSearch")
-    monkeypatch.setenv("OLYMPUS_SERVER_URL", "http://test")
-    monkeypatch.setenv("OLYMPUS_SERVER_AUTH_KEY", "key")
-
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {
-        "object": "list",
-        "data": [
-            {"id": "OneDrive", "object": "model", "created": 1, "owned_by": "zeus"},
-            {"id": "Athena", "object": "model", "created": 1, "owned_by": "zeus"},
-            {"id": "WebSearch", "object": "model", "created": 1, "owned_by": "zeus"},
-        ]
-    }
-    mock_client = MagicMock()
-    mock_client.__enter__ = MagicMock(return_value=mock_client)
-    mock_client.__exit__ = MagicMock(return_value=False)
-    mock_client.get.return_value = mock_resp
-
-    with patch("proxy.olympus.httpx.Client", return_value=mock_client):
-        from proxy.olympus import list_models
-        result = list_models()
-
-    assert len(result["data"]) == 2
-    assert {m["id"] for m in result["data"]} == {"OneDrive", "WebSearch"}
 ```
+
+> **Nota:** testes de `_allowed_models` e `is_model_allowed` foram removidos — `ALLOWED_MODELS` não existe mais. O apollo repassa todos os modelos do olympus sem filtrar.
 
 - [ ] **Step 2: Rodar para confirmar falha**
 
@@ -692,7 +630,7 @@ Expected: `ModuleNotFoundError: No module named 'proxy.olympus'`
 """Cliente HTTP para o olympus-ai-server. Toda comunicação com o olympus passa por aqui."""
 
 import os
-from typing import Generator, Optional
+from typing import Generator
 
 import httpx
 
@@ -708,36 +646,15 @@ def _olympus_headers() -> dict:
     return {"Authorization": f"Bearer {key}"}
 
 
-def _allowed_models() -> Optional[list]:
-    """Retorna None se todos os modelos são permitidos (*), senão lista de IDs permitidos."""
-    value = os.getenv("ALLOWED_MODELS", "*").strip()
-    if value == "*":
-        return None
-    return [m.strip() for m in value.split(",") if m.strip()]
-
-
-def is_model_allowed(model_id: str) -> bool:
-    """Retorna True se o modelo está em ALLOWED_MODELS ou se ALLOWED_MODELS == *."""
-    allowed = _allowed_models()
-    return allowed is None or model_id in allowed
-
-
 def list_models() -> dict:
-    """GET /v1/models do olympus, filtrado por ALLOWED_MODELS."""
+    """GET /v1/models do olympus — repassa todos os modelos sem filtrar."""
     with httpx.Client(timeout=_TIMEOUT) as client:
         response = client.get(
             f"{_olympus_url()}/v1/models",
             headers=_olympus_headers(),
         )
         response.raise_for_status()
-        data = response.json()
-
-    allowed = _allowed_models()
-    if allowed is None:
-        return data
-
-    filtered = [m for m in data.get("data", []) if m.get("id") in allowed]
-    return {"object": "list", "data": filtered}
+        return response.json()
 
 
 def chat_completions(payload: dict) -> httpx.Response:
@@ -809,7 +726,6 @@ def reset_server_singleton():
 @pytest.fixture
 def app(monkeypatch):
     monkeypatch.setenv("AUTH_API_KEY", "test-key")
-    monkeypatch.setenv("ALLOWED_MODELS", "OneDrive,WebSearch")
     from server.server import Server
     server = Server.get_instance()
     server.app.config["TESTING"] = True
@@ -858,19 +774,7 @@ def test_chat_completions_rejects_invalid_key(client):
     assert response.status_code == 401
 
 
-def test_chat_completions_rejects_blocked_model(client):
-    response = client.post(
-        "/v1/chat/completions",
-        json={"model": "Athena", "messages": [{"role": "user", "content": "hi"}]},
-        headers={"Authorization": "Bearer test-key"},
-    )
-    assert response.status_code == 400
-    data = json.loads(response.data)
-    assert data["error"]["code"] == "model_not_allowed"
-    assert data["error"]["type"] == "invalid_request_error"
-
-
-def test_chat_completions_forwards_allowed_model(client):
+def test_chat_completions_forwards_model(client):
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.content = b'{"choices": [{"message": {"content": "hello"}}]}'
@@ -1156,7 +1060,6 @@ substitutions:
   _IMAGE_TAG: latest
   _ENVIRONMENT: accept
   _OLYMPUS_SERVER_URL: "MUST_BE_SET_BY_TRIGGER"
-  _ALLOWED_MODELS: "*"
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -1189,7 +1092,7 @@ steps:
       - "--allow-unauthenticated"
       - "--set-env-vars"
       - >-
-        ENVIRONMENT=${_ENVIRONMENT},OLYMPUS_SERVER_URL=${_OLYMPUS_SERVER_URL},ALLOWED_MODELS=${_ALLOWED_MODELS}
+        ENVIRONMENT=${_ENVIRONMENT},OLYMPUS_SERVER_URL=${_OLYMPUS_SERVER_URL}
       - "--set-secrets"
       - >-
         AUTH_API_KEY=APOLLO_AUTH_API_KEY:latest,OLYMPUS_SERVER_AUTH_KEY=OLYMPUS_SERVER_AUTH_KEY:latest
@@ -1215,7 +1118,6 @@ substitutions:
   _IMAGE_TAG: $SHORT_SHA
   _OLYMPUS_SERVER_URL: https://olympus-ai-server-ukneqvhpoa-uc.a.run.app
   _ENVIRONMENT: accept
-  _ALLOWED_MODELS: "*"
 ```
 
 > **Nota:** A URL `olympus-ai-server-ukneqvhpoa-uc.a.run.app` é a URL do novo serviço após deploy na Task 11. Atualizar se a URL gerada for diferente.
@@ -1236,7 +1138,6 @@ substitutions:
   _IMAGE_TAG: $SHORT_SHA
   _OLYMPUS_SERVER_URL: https://olympus-ai-server-k56tkf3hxq-uc.a.run.app
   _ENVIRONMENT: production
-  _ALLOWED_MODELS: "OneDrive,WebSearch"
 ```
 
 > **Nota:** A URL `olympus-ai-server-k56tkf3hxq-uc.a.run.app` é a URL do novo serviço após deploy. Confirmar na Task 11.
@@ -1252,75 +1153,16 @@ git commit -m "chore: add CI/CD configs for app-apollo-server"
 
 ### Task 8: Atualizar `app-apollo-frontend` — `librechat.yaml` e `cloudbuild.yaml`
 
-**Contexto:** O frontend passa a apontar pro apollo-server. O `fetch: true` funciona sem problema de cold start porque o apollo-server é leve. A lógica de filtragem `_AGENTS_LIST` sai do cloudbuild do frontend.
+**Contexto:** O frontend passa a apontar pro apollo-server. Separação por ambiente via dois arquivos yaml: `librechat.yaml` (acceptance: Apollo + Olympus) e `librechat.prod.yaml` (prod: só Apollo). O cloudbuild copia o correto antes de buildar. Sem lista hardcoded de modelos — tudo via `fetch: true`.
+
+**Status: Implementado.**
 
 **Files (no repo `olympus-ai-frontend`):**
-- Modify: `librechat.yaml`
-- Modify: `cloudbuild.yaml`
-- Modify: `ci/cloudbuild-trigger-accept.yaml`
-- Modify: `ci/cloudbuild-trigger-prod.yaml`
-
-- [ ] **Step 1: Atualizar `librechat.yaml`**
-
-```yaml
-version: "1.1"
-cache: true
-
-interface:
-  endpointsMenu: false
-  modelSelect: true
-  parameters: false
-  sidePanel: false
-  presets: false
-  marketplace:
-    use: false
-
-fileConfig:
-  disabled: true
-
-endpoints:
-  custom:
-    - name: "Apollo"
-      apiKey: "${APOLLO_AUTH_API_KEY}"
-      baseURL: "${APOLLO_SERVER_URL}/v1"
-      models:
-        fetch: true
-      titleConvo: true
-      titleModel: "Erro"
-      summarize: false
-      forcePrompt: false
-      modelDisplayLabel: "Apollo"
-      dropParams:
-        - "stop"
-        - "user"
-        - "frequency_penalty"
-        - "presence_penalty"
-```
-
-- [ ] **Step 2: Atualizar `cloudbuild.yaml` do frontend**
-
-Remover o step `sync-config` inteiro (não há mais `_AGENTS_LIST`).
-
-Atualizar `substitutions`:
-```yaml
-substitutions:
-  _REGION: us-central1
-  _AR_REPO: app-apollo-frontend
-  _SERVICE_NAME: app-apollo-frontend
-  _BACKEND_URL: MUST_BE_SET_BY_TRIGGER
-```
-
-Atualizar nomes de imagem (de `olympus-frontend` para `apollo-frontend`) em todos os steps de build, push e deploy.
-
-Atualizar o step de deploy — `--set-env-vars` e `--set-secrets`:
-```yaml
-      - >-
-        --set-env-vars=HOST=0.0.0.0,APOLLO_SERVER_URL=${_BACKEND_URL},APP_TITLE=Apollo,ALLOW_EMAIL_LOGIN=true,ALLOW_REGISTRATION=true,ENDPOINTS=custom,TRUST_PROXY=1
-      - >-
-        --set-secrets=JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,CREDS_KEY=CREDS_KEY:latest,CREDS_IV=CREDS_IV:latest,APOLLO_AUTH_API_KEY=APOLLO_AUTH_API_KEY:latest,MONGO_URI=MONGO_URI:latest
-```
-
-(mudanças: `OLYMPUS_BASE_URL` → `APOLLO_SERVER_URL`, `APP_TITLE=Olympus` → `APP_TITLE=Apollo`, `OLYMPUS_AUTH_API_KEY` → `APOLLO_AUTH_API_KEY`)
+- Modify: `librechat.yaml` — Apollo + Olympus, `fetch: true`, sem `default`
+- Create: `librechat.prod.yaml` — só Apollo, `fetch: true`, sem `default`
+- Modify: `cloudbuild.yaml` — step sync-config copia yaml por `_ENVIRONMENT`, renomeia imagens para `app-apollo-frontend`, atualiza env vars e secrets
+- Modify: `ci/cloudbuild-trigger-accept.yaml` — `_ENVIRONMENT: accept`, `_AR_REPO/SERVICE_NAME: app-apollo-frontend`
+- Modify: `ci/cloudbuild-trigger-prod.yaml` — `_ENVIRONMENT: production`, idem
 
 - [ ] **Step 3: Atualizar `ci/cloudbuild-trigger-accept.yaml`**
 
@@ -1337,6 +1179,7 @@ substitutions:
   _BACKEND_URL: https://app-apollo-server-ukneqvhpoa-uc.a.run.app
   _AR_REPO: app-apollo-frontend
   _SERVICE_NAME: app-apollo-frontend
+  _ENVIRONMENT: accept
 ```
 
 > **Nota:** URL do apollo-server em accept — confirmar após deploy na Task 12.
@@ -1356,6 +1199,7 @@ substitutions:
   _BACKEND_URL: https://app-apollo-server-k56tkf3hxq-uc.a.run.app
   _AR_REPO: app-apollo-frontend
   _SERVICE_NAME: app-apollo-frontend
+  _ENVIRONMENT: production
 ```
 
 > **Nota:** URL do apollo-server em prod — confirmar após deploy na Task 12.
@@ -1363,9 +1207,61 @@ substitutions:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add librechat.yaml cloudbuild.yaml ci/
-git commit -m "chore: rename to app-apollo-frontend, point to apollo-server, fetch:true"
+git add librechat.yaml librechat.prod.yaml cloudbuild.yaml ci/
+git commit -m "chore: rename to app-apollo-frontend, two-env yaml, fetch:true, no hardcoded models"
 ```
+
+---
+
+### Task 8.1: Coldstart handling — simulação nos backends e polling no frontend
+
+**Contexto:** O Cloud Run tem coldstart que pode demorar vários segundos. O LibreChat original caía num fallback hardcoded ao timeout. A solução foi: backends retornam 200 com lista vazia durante o warmup, e o frontend faz polling até preencher — sem fallback, com feedback visual (spinner).
+
+**Status: Implementado.**
+
+#### Backend — coldstart real do Cloud Run
+
+O coldstart é inerente ao Cloud Run com `--min-instances=0`. O olympus já usa `--min-instances=1`, o que reduz (mas não elimina) o problema. Não há simulação de coldstart no código dos backends — o frontend lida com isso via polling.
+
+#### Frontend — remoção de cache e polling automático
+
+**Files modificados:**
+- `librechat/api/server/controllers/ModelController.js`
+- `librechat/client/src/hooks/Endpoint/useEndpoints.ts`
+- `librechat/client/src/components/Chat/Menus/Endpoints/components/EndpointItem.tsx`
+
+**ModelController.js:** cache removido completamente. Cada chamada ao `/api/models` vai diretamente aos backends — sem estado em memória. Isso garante que novos modelos aparecem sem reiniciar o servidor Node.js.
+
+**useEndpoints.ts:** `useGetModelsQuery` recebe `refetchInterval` dinâmico:
+```typescript
+refetchInterval: (data) => {
+  if (!data) return 10_000;
+  const hasEmpty = Object.values(data).some(
+    (models) => Array.isArray(models) && models.length === 0,
+  );
+  return hasEmpty ? 10_000 : 300_000;
+},
+```
+- Endpoint vazio → poll a cada 10s até preencher
+- Todos preenchidos → poll a cada 5min (verificação de novos modelos)
+
+**EndpointItem.tsx — spinner:** `isLoadingModels` simplificado para mostrar spinner sempre que `!hasModels` (independente do estado do fetch). Antes, o spinner sumia entre os intervalos de poll.
+
+```typescript
+// Antes (bugado: spinner sumia entre polls)
+const isLoadingModels = !hasModels && ... && (modelsQuery.isLoading || modelsQuery.isFetching || modelsQuery.isError);
+
+// Depois (correto: spinner persiste enquanto lista estiver vazia)
+const isLoadingModels = !hasModels && ep !== EModelEndpoint.agents && ep !== EModelEndpoint.assistants;
+```
+
+**Fluxo completo:**
+1. Frontend abre → `useGetModelsQuery` chama `/api/models`
+2. Node.js chama `/v1/models` em cada backend (parallel, sem cache)
+3. Backend em coldstart → retorna 200 vazio
+4. Frontend: endpoint sem modelos → mostra spinner
+5. Poll a cada 10s → backend responde com modelos → spinner some, setinha aparece
+6. Todos preenchidos → poll cai para 5min
 
 ---
 
@@ -1579,7 +1475,7 @@ OLYMPUS_ACCEPT_URL=$(gcloud run services describe olympus-ai-server \
 gcloud builds submit \
   --config=cloudbuild.yaml \
   --project=zeus-accept \
-  --substitutions=_SERVICE_NAME=app-apollo-server,_AR_REPO=app-apollo-server,_IMAGE_TAG=latest,_ENVIRONMENT=accept,_OLYMPUS_SERVER_URL=$OLYMPUS_ACCEPT_URL,_ALLOWED_MODELS="*" \
+  --substitutions=_SERVICE_NAME=app-apollo-server,_AR_REPO=app-apollo-server,_IMAGE_TAG=latest,_ENVIRONMENT=accept,_OLYMPUS_SERVER_URL=$OLYMPUS_ACCEPT_URL \
   /Users/jorge/Documents/Git/app-apollo-server
 ```
 
@@ -1603,7 +1499,7 @@ OLYMPUS_PROD_URL=$(gcloud run services describe olympus-ai-server \
 gcloud builds submit \
   --config=cloudbuild.yaml \
   --project=zeus-prod-335018 \
-  --substitutions=_SERVICE_NAME=app-apollo-server,_AR_REPO=app-apollo-server,_IMAGE_TAG=latest,_ENVIRONMENT=production,_OLYMPUS_SERVER_URL=$OLYMPUS_PROD_URL,_ALLOWED_MODELS="OneDrive,WebSearch" \
+  --substitutions=_SERVICE_NAME=app-apollo-server,_AR_REPO=app-apollo-server,_IMAGE_TAG=latest,_ENVIRONMENT=production,_OLYMPUS_SERVER_URL=$OLYMPUS_PROD_URL \
   /Users/jorge/Documents/Git/app-apollo-server
 ```
 
@@ -1828,3 +1724,69 @@ gcloud builds triggers delete <ID> --project=zeus-prod-335018
 gcloud builds triggers list --project=zeus-accept --filter="github.name=olympus-ai-backend OR github.name=olympus-ai-frontend" --format="value(id)"
 gcloud builds triggers delete <ID> --project=zeus-accept
 ```
+
+---
+
+## Estado Atual — O que foi feito e o que falta
+
+> Atualizado em 2026-05-19. Use este sumário ao iniciar uma nova sessão.
+
+---
+
+### ✅ Feito (commitado)
+
+| Repo | O que foi feito |
+|---|---|
+| `olympus-ai-backend` | Task 1: CI/CD renomeado para `olympus-ai-server` (commit `88f3b78`) |
+| `olympus-ai-backend` | `cloudbuild.yaml`: `--min-instances=1` → `--min-instances=0` (frontend resiliente ao coldstart via polling) |
+| `app-apollo-server` | Tasks 2–7: bootstrap completo, proxy, server, entrypoints, CI/CD configs (5 commits, branch `main`, não pusheados) |
+| `app-apollo-server` | `cloudbuild.yaml`: `--min-instances=1` → `--min-instances=0` (idem) |
+
+---
+
+### ⚠️ Feito mas NÃO commitado
+
+| Repo | Branch | O que está pendente de commit |
+|---|---|---|
+| `olympus-ai-backend` | `acceptance` | Atualização do plano (`docs/superpowers/plans/`) |
+| `olympus-ai-frontend` | `main` | 13 arquivos modificados + `librechat.prod.yaml` (untracked) — ver lista abaixo |
+
+**Arquivos modificados no `olympus-ai-frontend` (não commitados):**
+- `ci/cloudbuild-trigger-accept.yaml` — renomeado para `app-apollo-frontend`, `_ENVIRONMENT: accept`
+- `ci/cloudbuild-trigger-prod.yaml` — renomeado para `app-apollo-frontend`, `_ENVIRONMENT: production`
+- `cloudbuild.yaml` — step `sync-config` copia yaml por ambiente, imagens renomeadas, env vars/secrets atualizados
+- `librechat.yaml` — acceptance: Apollo + Olympus, `fetch: true`, sem `default`
+- `librechat.prod.yaml` *(untracked)* — prod: só Apollo, `fetch: true`, sem `default`
+- `librechat/api/server/controllers/ModelController.js` — cache removido (sempre re-fetch dos backends)
+- `librechat/client/src/hooks/Endpoint/useEndpoints.ts` — polling: 10s (vazio) / 5min (preenchido)
+- `librechat/client/src/components/Chat/Menus/Endpoints/components/EndpointItem.tsx` — spinner sempre quando `!hasModels`, `handleRefreshModels` removido
+- Outros arquivos (`selector.ts`, `types.ts`, `ModelSelect.tsx`, `OpenAI.tsx`, `react-query-service.ts`) — alterações da sessão anterior (spinner, isLoadingModels)
+
+---
+
+### ❌ Pendente no código (não implementado)
+
+| Repo | O que falta |
+|---|---|
+| `app-apollo-server` | Remover `ALLOWED_MODELS` do código: `proxy/olympus.py` (`_allowed_models`, `is_model_allowed`, `_fallback_models`, filtragem em `list_models`) e `server/server.py` (check `is_model_allowed` em `/chat/completions`). O apollo deve ser proxy puro. |
+
+---
+
+### 🔲 Não iniciado (Fase 2 e 3 — Cloud Run)
+
+- Task 9: Teste de integração local
+- Task 10: GCP — Artifact Registry repos + secrets (`OLYMPUS_SERVER_AUTH_KEY`, `APOLLO_AUTH_API_KEY`)
+- Task 11: Deploy `olympus-ai-server` no Cloud Run
+- Task 12: Deploy `app-apollo-server` no Cloud Run
+- Task 13: Deploy `app-apollo-frontend` no Cloud Run
+- Task 14: Atualizar secrets do `chronos-diagnosis`, deletar serviços antigos
+- Task 15: Criar Cloud Build Triggers novos, deletar antigos
+
+---
+
+### ⚠️ Atenção antes de continuar
+
+1. **Branch do apollo:** está em `main`, não em `acceptance`. Definir estratégia de branch antes de pushar.
+2. **Branch do frontend:** está em `main`. Os 13 arquivos não commitados precisam ser commitados e a branch definida.
+3. **ALLOWED_MODELS no apollo:** ainda presente no código — remover antes de qualquer deploy.
+4. **Commits do olympus (plano):** não commitados — commitá-los na branch `acceptance`.
